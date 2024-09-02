@@ -34,6 +34,11 @@
         <span class="points">3 Points</span>
       </div>
 
+      <!-- Display the timer -->
+      <div class="timer">
+        Time Remaining: {{ minutes }}:{{ seconds < 10 ? '0' + seconds : seconds }}
+      </div>
+
       <!-- Multiple choice answers section -->
       <div class="multiple-choice-container">
         <p class="multiple-choice">
@@ -46,7 +51,6 @@
       </div>
     </div>
 
-    <!-- Combine v-if and v-else in the same transition block -->
     <transition name="fade">
       <div v-if="showResults" class="results-container animated-results">
         <p class="correct-answer">The right answer is: <strong>£100,000</strong></p>
@@ -64,7 +68,6 @@
         <button class="next-question-button" @click="nextQuestion">Next Question</button>
       </div>
 
-      <!-- v-else must be directly after v-if -->
       <div v-else class="team-answers animated-answers">
         <p class="answer-label">Select Your Answer:</p>
         <div class="teams-container">
@@ -100,18 +103,44 @@ export default {
       correctAnswer: 'C',
       teamAnswers: Array(this.teams.length).fill(''), // Initialize with empty answers
       showResults: false, // To control the display of results
+      timer: 300, // 5 minutes in seconds
+      intervalId: null, // To store the interval ID for the timer
     };
+  },
+  computed: {
+    minutes() {
+      return Math.floor(this.timer / 60);
+    },
+    seconds() {
+      return this.timer % 60;
+    }
   },
   methods: {
     showCorrectAnswer() {
       this.showResults = true;
+      clearInterval(this.intervalId); // Stop the timer
     },
     nextQuestion() {
       // Award 3 points if the answer is correct, otherwise 0 points
       const pointsArray = this.teamAnswers.map(answer => (answer === this.correctAnswer ? 3 : 0));
       this.$emit('award-points', pointsArray); // Emit points to parent
       this.$emit('next-question'); // Emit event to parent to move to the next question
+    },
+    startTimer() {
+      this.intervalId = setInterval(() => {
+        if (this.timer > 0) {
+          this.timer--;
+        } else {
+          this.showCorrectAnswer(); // Show the correct answer when time is up
+        }
+      }, 1000);
     }
+  },
+  mounted() {
+    this.startTimer(); // Start the timer when the component is mounted
+  },
+  beforeUnmount() {
+    clearInterval(this.intervalId); // Clear the timer when the component is destroyed
   }
 };
 </script>
@@ -129,6 +158,13 @@ export default {
   max-width: 800px; /* Max width for better responsiveness */
   margin: 20px auto; /* Centered and spaced */
   animation: slideIn 1s ease-out;
+}
+
+.timer {
+  font-size: 1.2rem;
+  color: #ffcc00;
+  margin: 20px 0;
+  animation: pulse 1.5s infinite;
 }
 
 @keyframes slideIn {
