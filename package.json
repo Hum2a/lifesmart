@@ -8,9 +8,14 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "chart.js": "^4.4.4",
+    "chartjs-plugin-annotation": "^3.0.1",
     "core-js": "^3.8.3",
+    "firebase": "^10.13.1",
+    "firebase-admin": "^12.4.0",
     "vue": "^3.2.13",
-    "vue-router": "^4.4.3"
+    "vue-router": "^4.4.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
