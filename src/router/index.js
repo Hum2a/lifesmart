@@ -3,6 +3,10 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomeScreen from '../components/screens/HomeScreen.vue';
 import QuizLandingPage from '../components/screens/quiz/QuizLandingPage.vue';
 import FinancialQuiz from '../components/screens/quiz/FinancialQuiz.vue'; // Import the new component
+import GroupCreation from '../components/screens/simulation/GroupCreation.vue';
+import SimulationPage from '../components/screens/simulation/Simulation.vue';
+import ResultsScreen from '../components/screens/simulation/ResultsScreen.vue';
+import QuizSimulation from '../components/screens/simulation/QuizSimulation.vue';
 
 const routes = [
   {
@@ -20,6 +24,26 @@ const routes = [
     name: 'Quiz',
     component: FinancialQuiz,
     props: route => ({ teams: route.query.teams }), // Passing team names as props
+  },
+  {
+    path: '/quiz-simulation',
+    name: 'QuizSimulation',
+    component: QuizSimulation,
+  },
+  {
+    path: '/simulation',
+    name: 'Simulation',
+    component: GroupCreation,
+  },
+  {
+    path: '/simulation-page',
+    name: 'SimulationPage',
+    component: SimulationPage
+  },
+  {
+    path: '/simulation-results',
+    name: 'SimResults',
+    component: ResultsScreen,
   },
 ];
 
