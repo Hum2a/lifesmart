@@ -41,6 +41,7 @@
         <div class="teams-container">
           <div v-for="(team, index) in teams" :key="index" class="team-result-box" :class="{ correct: isTeamAnswerCorrect(index), incorrect: !isTeamAnswerCorrect(index) }">
             <p>{{ team }}</p>
+            <p>{{ calculateTeamScore(index) }} Points</p>
           </div>
         </div>
         <button class="next-question-button" @click="nextQuestion">Next Question</button>
@@ -98,20 +99,31 @@ export default {
       clearInterval(this.intervalId); // Stop the timer
     },
     nextQuestion() {
-      const pointsArray = this.teamAnswers.map(answers => {
-        let points = 0;
-        answers.forEach(answer => {
-          if (this.correctAnswer.includes(answer)) {
-            points++;
-          }
-        });
-        return points; // 1 point for each correct answer selected
-      });
+      const pointsArray = this.teamAnswers.map((answers) => this.calculateScore(answers));
       this.$emit('award-points', pointsArray); // Emit points to parent
       this.$emit('next-question'); // Emit event to parent to move to the next question
     },
+    calculateScore(answers) {
+      let score = 0;
+      this.answerOptions.forEach((option) => {
+        if (answers.includes(option)) {
+          if (this.correctAnswer.includes(option)) {
+            score++; // Gain a point for each correct answer
+          } else {
+            score--; // Lose a point for each incorrect answer
+          }
+        }
+      });
+      return score;
+    },
     isTeamAnswerCorrect(index) {
-      return this.teamAnswers[index].every(answer => this.correctAnswer.includes(answer)) && this.teamAnswers[index].length === this.correctAnswer.length;
+      return (
+        this.teamAnswers[index].every((answer) => this.correctAnswer.includes(answer)) &&
+        this.teamAnswers[index].length === this.correctAnswer.length
+      );
+    },
+    calculateTeamScore(index) {
+      return this.calculateScore(this.teamAnswers[index]);
     },
     startTimer() {
       this.intervalId = setInterval(() => {
