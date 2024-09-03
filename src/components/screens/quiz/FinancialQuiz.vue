@@ -58,7 +58,7 @@
           </tbody>
         </table>
         <button @click="goHome" class="home-button">Go to Home</button>
-        <button @click="goToSimulation" class="simulation-button">Go to Simulation</button>
+        <button @click="saveResultsAndNavigate" class="simulation-button">Go to Simulation</button>
       </div>
     </main>
 
@@ -72,6 +72,7 @@
 <script>
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { getFirestore, collection, setDoc, doc } from 'firebase/firestore';
 
 // Import all question components
 import Question1 from './questions/Question1.vue';
@@ -85,13 +86,16 @@ export default {
   setup() {
     const route = useRoute();
     const router = useRouter();
-    const teams = ref(route.query.teams ? route.query.teams.split(',').map(name => ({ name, points: 0 })) : []);
+    const db = getFirestore();
+
+    const teams = ref(
+      route.query.teams ? route.query.teams.split(',').map(name => ({ name, points: 0 })) : []
+    );
 
     const currentQuestionIndex = ref(0);
-    const totalQuestions = 5; // Update to the total number of questions
+    const totalQuestions = 5;
     const quizComplete = ref(false);
 
-    // Array of question components
     const questionComponents = [
       Question1,
       Question2,
@@ -103,17 +107,14 @@ export default {
     const currentQuestionComponent = computed(() => questionComponents[currentQuestionIndex.value]);
 
     const sortedTeams = computed(() => {
-      // Sort teams by points in descending order
       return [...teams.value].sort((a, b) => b.points - a.points);
     });
 
     const handleAnswer = (answer) => {
       console.log('Team answered:', answer);
-      // Logic to handle the answer and store results
     };
 
     const updateScores = (scores) => {
-      // Update each team's score with the points awarded
       scores.forEach((points, index) => {
         teams.value[index].points += points;
       });
@@ -128,11 +129,24 @@ export default {
     };
 
     const goHome = () => {
-      router.push({ name: 'Home' }); // Navigate back to the home page or starting screen
+      router.push({ name: 'Home' });
     };
 
-    const goToSimulation = () => {
-      router.push({ name: 'Simulation' }); // Navigate to the simulation screen
+    const saveResultsAndNavigate = async () => {
+      const teamsCollectionRef = collection(db, 'Quiz', 'Quiz Simulations', 'Teams');
+
+      // Save each team's data to the Teams collection
+      for (const team of sortedTeams.value) {
+        const teamDocRef = doc(teamsCollectionRef, team.name);
+        await setDoc(teamDocRef, {
+          name: team.name,
+          points: team.points
+        });
+      }
+
+      console.log('Results saved to Firebase:', sortedTeams.value);
+
+      router.push({ name: 'QuizSimulation' }); // Navigate to Quiz Simulation
     };
 
     return {
@@ -146,7 +160,7 @@ export default {
       updateScores,
       nextQuestion,
       goHome,
-      goToSimulation,
+      saveResultsAndNavigate, // Use this function to save results and navigate
     };
   },
 };
@@ -160,13 +174,13 @@ export default {
   background-color: #1a237e; /* Dark Blue Background */
   color: #ffffff; /* White Text */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding: 0; /* Remove padding if necessary */
-  margin: 0; /* Remove margin if necessary */
-  width: 100%; /* Ensure full width */
+  padding: 0;
+  margin: 0;
+  width: 100%;
 }
 
 .header {
-  background-color: #283593; /* Slightly lighter dark blue */
+  background-color: #283593;
   padding: 20px;
   text-align: center;
 }
@@ -182,7 +196,7 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%; /* Ensure main content is full width */
+  width: 100%;
 }
 
 .scoreboard, .results-screen {
@@ -215,7 +229,7 @@ export default {
 }
 
 .scores-table th, .results-table th {
-  background-color: #283593; /* Header background */
+  background-color: #283593;
 }
 
 .home-button, .simulation-button {
@@ -234,10 +248,10 @@ export default {
 }
 
 .footer {
-  background-color: #283593; /* Same as Header Background */
+  background-color: #283593;
   padding: 20px;
   text-align: center;
-  width: 100%; /* Ensure footer is full width */
+  width: 100%;
 }
 
 .footer-text {

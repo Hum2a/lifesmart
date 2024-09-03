@@ -18,15 +18,16 @@
       </tbody>
     </table>
 
-    <!-- Buttons to navigate to Home or Simulation -->
     <div class="button-container">
       <button @click="goHome" class="home-button">Go to Home</button>
-      <button @click="goToSimulation" class="simulation-button">Go to Simulation</button>
+      <button @click="saveResultsAndNavigate" class="simulation-button">Go to Simulation</button>
     </div>
   </div>
 </template>
 
 <script>
+import { getFirestore, collection, setDoc, doc } from 'firebase/firestore';
+
 export default {
   name: 'ResultsScreen',
   props: {
@@ -43,10 +44,24 @@ export default {
   },
   methods: {
     goHome() {
-      this.$router.push({ name: 'Home' }); // Navigate back to the home page or starting screen
+      this.$router.push({ name: 'Home' });
     },
-    goToSimulation() {
-      this.$router.push({ name: 'Simulation' }); // Navigate to the simulation screen
+    async saveResultsAndNavigate() {
+      const db = getFirestore();
+      const teamsCollectionRef = collection(db, 'Quiz', 'Quiz Simulations', 'Teams');
+
+      // Save each team's data to the Teams collection
+      for (const team of this.sortedTeams) {
+        const teamDocRef = doc(teamsCollectionRef, team.name);
+        await setDoc(teamDocRef, {
+          name: team.name,
+          points: team.points
+        });
+      }
+
+      console.log('Results saved to Firebase:', this.sortedTeams);
+
+      this.$router.push({ name: 'QuizSimulation' }); // Navigate to Quiz Simulation
     }
   }
 };
@@ -72,7 +87,8 @@ export default {
   margin-top: 20px;
 }
 
-.results-table th, .results-table td {
+.results-table th,
+.results-table td {
   border: 1px solid #ffffff;
   padding: 10px;
   text-align: center;
@@ -89,7 +105,8 @@ export default {
   gap: 15px;
 }
 
-.home-button, .simulation-button {
+.home-button,
+.simulation-button {
   padding: 10px 20px;
   background-color: #1abc9c;
   color: white;
@@ -99,7 +116,8 @@ export default {
   transition: background-color 0.3s ease;
 }
 
-.home-button:hover, .simulation-button:hover {
+.home-button:hover,
+.simulation-button:hover {
   background-color: #16a085;
 }
 </style>
