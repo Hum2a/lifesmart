@@ -95,17 +95,30 @@ export default {
         return;
       }
       const db = getFirestore();
-      const querySnapshot = await getDocs(collection(db, 'Quiz', 'Asset Market Simulations', 'Simulations', `Simulation ${this.latestSimulationIndex}`, "Groups"));
+      const querySnapshot = await getDocs(
+        collection(
+          db,
+          'Quiz',
+          'Asset Market Simulations',
+          'Simulations',
+          `Simulation ${this.latestSimulationIndex}`,
+          'Groups'
+        )
+      );
+
       this.groups = querySnapshot.docs.map(doc => {
         const data = doc.data();
-        const initialValues = {
-          equity: parseFloat(data.equity) || 0,
-          bonds: parseFloat(data.bonds) || 0,
-          realestate: parseFloat(data.realestate) || 0,
-          commodities: parseFloat(data.commodities) || 0,
-          other: parseFloat(data.other) || 0
-        };
+        
+        // Check for initial asset data in two places
+        const equity = parseFloat(data.equity) || parseFloat(data.assets?.equity) || 0;
+        const bonds = parseFloat(data.bonds) || parseFloat(data.assets?.bonds) || 0;
+        const realestate = parseFloat(data.realestate) || parseFloat(data.assets?.realestate) || 0;
+        const commodities = parseFloat(data.commodities) || parseFloat(data.assets?.commodities) || 0;
+        const other = parseFloat(data.other) || parseFloat(data.assets?.other) || 0;
+
+        const initialValues = { equity, bonds, realestate, commodities, other };
         const initialTotal = Object.values(initialValues).reduce((acc, val) => acc + val, 0);
+
         return {
           id: doc.id,
           name: data.name,
@@ -123,6 +136,7 @@ export default {
           }
         };
       });
+
       console.log("fetchGroups: groups", this.groups);
     },
     async fetchAssetChanges() {
