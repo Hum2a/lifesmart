@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeScreen from '../components/screens/HomeScreen.vue';
 import QuizLandingPage from '../components/screens/quiz/QuizLandingPage.vue';
@@ -29,6 +28,7 @@ const routes = [
     path: '/quiz-simulation',
     name: 'QuizSimulation',
     component: QuizSimulation,
+    props: route => ({ teams: route.query.teams }), // Add this line to pass teams as props
   },
   {
     path: '/simulation',
