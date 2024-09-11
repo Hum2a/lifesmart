@@ -103,7 +103,7 @@ export default {
       correctAnswer: 'C',
       teamAnswers: Array(this.teams.length).fill(''), // Initialize with empty answers
       showResults: false, // To control the display of results
-      timer: 300, // 5 minutes in seconds
+      timer: 180, // 5 minutes in seconds
       intervalId: null, // To store the interval ID for the timer
     };
   },

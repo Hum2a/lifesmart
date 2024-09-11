@@ -75,7 +75,7 @@ export default {
   },
   data() {
     return {
-      correctAnswer: 'E', // Correct answer is 'E - £120,000'
+      correctAnswer: 'D', // Correct answer is 'E - £120,000'
       teamAnswers: Array(this.teams.length).fill(''), // Initialize with empty answers
       showResults: false, // To control the display of results
       timer: 60, // 1 minute in seconds
