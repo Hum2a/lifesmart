@@ -165,7 +165,7 @@ export default {
       }
     },
     getTotalSpendableAmount(points) {
-      return 10000 + (points * 5000);
+      return 100000 + (points * 500);
     },
     getRemainingSpendableAmount(group) {
       const totalSpendable = this.getTotalSpendableAmount(group.points);
