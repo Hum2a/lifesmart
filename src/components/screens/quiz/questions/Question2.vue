@@ -1,60 +1,74 @@
 <template>
   <div class="question-container">
-    <div class="question-header">
-      <h2 class="animated-header">Tax Calculation Challenge</h2>
+    <!-- Header and Progress Bar -->
+    <div class="progress-bar-container">
+      <div class="progress-bar">
+        <div class="progress" :style="{ width: progressBarWidth + '%' }"></div>
+      </div>
+      <div class="timer">{{ minutes }}:{{ seconds < 10 ? '0' + seconds : seconds }}</div>
     </div>
 
-    <div class="question-content animated-section">
-      <p>Ben earns £60,000 a year. Income tax automatically comes out of his paycheck before he gets the money.</p>
-
-      <div class="tax-info">
-        <div class="tax-bracket">
-          <p><strong>0 – £10,000 = 0%</strong> (The first 10k is tax-free)</p>
-          <p><strong>£10,000 - £40,000 = 20%</strong> (You pay 20% tax on the money IN THIS BRACKET only)</p>
-          <p><strong>£40,000 - £100,000 = 40%</strong> (You pay 40% tax on the money IN THIS BRACKET only)</p>
-        </div>
-      </div>
-
-      <p class="question animated-question">HOW MUCH MONEY DOES HE GET IN HIS ACCOUNT AFTER TAX? <span class="points">3 Points</span></p>
-
-      <!-- Display the timer -->
-      <div class="timer">
-        Time Remaining: {{ minutes }}:{{ seconds < 10 ? '0' + seconds : seconds }}
-      </div>
-
-      <div class="answers animated-answers">
-        <p>A - £38,000</p>
-        <p>B - £42,000</p>
-        <p>C - £46,000</p>
-        <p>D - £48,000</p>
-        <p>E - £50,000</p>
-      </div>
+    <!-- Task Description -->
+    <div class="task-header">
+      <h3>Task 2</h3>
+      <p>Ben earns £60,000 a year. Income Tax automatically comes out of his paycheck before he gets the money.</p>
     </div>
 
-    <transition name="fade">
-      <div v-if="showResults" class="results-container animated-results">
-        <p class="correct-answer">The correct answer is: <strong>C - £46,000</strong></p>
-        <div class="teams-container">
-          <div
-            v-for="(team, index) in teams"
-            :key="index"
-            class="team-result-box"
-            :class="{ correct: teamAnswers[index] === correctAnswer, incorrect: teamAnswers[index] !== correctAnswer }"
-          >
-            <p>{{ team }}</p>
-            <p>{{ teamAnswers[index] }}</p>
-          </div>
-        </div>
-        <button class="next-question-button" @click="nextQuestion">Next Question</button>
+    <!-- Tax Information Table -->
+    <div class="tax-info-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Income</th>
+            <th>Tax rate</th>
+            <th>Info</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>£0 - £10,000</td>
+            <td>0%</td>
+            <td>The first 10k is tax-free</td>
+          </tr>
+          <tr>
+            <td>£10,000 - £40,000</td>
+            <td>20%</td>
+            <td>You pay 20% on the money in this bracket only</td>
+          </tr>
+          <tr>
+            <td>£40,000 - £100,000</td>
+            <td>40%</td>
+            <td>You pay 40% on the money in this bracket only</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Conditionally display answer options or result section -->
+    <div v-if="!showResults">
+      <!-- Question and Points Section -->
+      <div class="question-section">
+        <p>How much money does he get in his account after tax?</p>
+        <p class="points">⚡ 3 points</p>
       </div>
 
-      <div v-else class="team-answers animated-answers">
-        <p class="answer-label">Select Your Answer:</p>
-        <div class="teams-container">
-          <div v-for="(team, index) in teams" :key="index" class="team-box">
-            <p>{{ team }}</p>
-            <select v-model="teamAnswers[index]" class="team-select">
-              <option value="" disabled>Select Answer</option>
+      <!-- Multiple Choice Options -->
+      <div class="choices-container">
+        <button class="choice-button">A. £38,000</button>
+        <button class="choice-button">B. £42,000</button>
+        <button class="choice-button">C. £46,000</button>
+        <button class="choice-button">D. £48,000</button>
+        <button class="choice-button">E. £50,000</button>
+      </div>
+
+      <!-- Team Answer Section -->
+      <div class="team-answer-section">
+        <h4>Your answers</h4>
+        <div class="team-answer-container">
+          <div v-for="(team, index) in teams" :key="team.name" class="team-answer-box">
+            <p>{{ team.name }}</p>
+            <select v-model="teamAnswers[index]" class="answer-select">
+              <option value="" disabled>Select answer</option>
               <option value="A">A</option>
               <option value="B">B</option>
               <option value="C">C</option>
@@ -63,9 +77,74 @@
             </select>
           </div>
         </div>
-        <button class="show-answer-button animated-button" @click="showCorrectAnswer">Show Correct Answer</button>
       </div>
-    </transition>
+
+      <!-- Submit Button -->
+      <button class="submit-button" @click="submitAnswers">Submit</button>
+    </div>
+
+    <!-- Correct Answer and Results Section -->
+    <div v-else class="result-section">
+      <h4>Correct Answer:</h4>
+      <p class="correct-answer">£46,000</p>
+      <p @click="toggleExpandedAnswer" class="detailed-answer-toggle">
+        Click to see detailed answer
+        <span v-if="!showExpandedAnswer">⬇️</span>
+        <span v-else>⬆️</span>
+      </p>
+
+      <!-- Expanded Answer (Detailed Explanation) -->
+      <div v-if="showExpandedAnswer" class="expanded-answer">
+        <table>
+          <thead>
+            <tr>
+              <th>Income</th>
+              <th>Tax rate</th>
+              <th>Calculations</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>£0 - £10,000</td>
+              <td>0%</td>
+              <td>£0</td>
+            </tr>
+            <tr>
+              <td>£10,000 - £40,000</td>
+              <td>20%</td>
+              <td>£30,000 * 20% = £6,000</td>
+            </tr>
+            <tr>
+              <td>£40,000 - £60,000</td>
+              <td>40%</td>
+              <td>£20,000 * 40% = £8,000</td>
+            </tr>
+            <tr>
+              <td colspan="3">
+                <strong>Total tax paid:</strong> £6,000 + £8,000 = £14,000
+              </td>
+            </tr>
+            <tr>
+              <td colspan="3">
+                <strong>Total income left to take home:</strong> £60,000 - £14,000 = £46,000
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Display each team's answer with comparison -->
+      <div class="team-answer-comparison">
+        <div v-for="(team, index) in teams" :key="team.name" class="team-answer-box">
+          <p>{{ team.name }}</p>
+          <div :class="{'correct': teamAnswers[index] === correctAnswer, 'incorrect': teamAnswers[index] !== correctAnswer}">
+            {{ teamAnswers[index] || '-' }}
+          </div>
+        </div>
+      </div>
+
+      <button class="next-question-button" @click="nextQuestion">Next</button>
+    </div>
   </div>
 </template>
 
@@ -75,16 +154,17 @@ export default {
   props: {
     teams: {
       type: Array,
-      required: true
+      required: true // The teams will be passed from FinancialQuiz.vue
     }
   },
   data() {
     return {
-      correctAnswer: 'C', // Correct answer for this question
-      teamAnswers: Array(this.teams.length).fill(''), // Initialize with empty answers
-      showResults: false, // To control the display of results
-      timer: 240, // 4 minutes in seconds
-      intervalId: null, // To store the interval ID for the timer
+      correctAnswer: 'C',
+      teamAnswers: Array(this.teams.length).fill(''), // Initialize with empty answers for each team
+      showResults: false,
+      showExpandedAnswer: false, // State to show/hide expanded answer
+      timer: 240, // Timer starts at 4 minutes
+      intervalId: null
     };
   },
   computed: {
@@ -93,24 +173,30 @@ export default {
     },
     seconds() {
       return this.timer % 60;
+    },
+    progressBarWidth() {
+      return (this.timer / 240) * 100; // Calculate progress bar width based on time remaining
     }
   },
   methods: {
-    showCorrectAnswer() {
-      this.showResults = true;
-      clearInterval(this.intervalId); // Stop the timer
+    submitAnswers() {
+      this.showResults = true; // Set the showResults flag to true to reveal the correct answer and the comparison of each team's answer
+      clearInterval(this.intervalId); // Clear the timer after submission
     },
     nextQuestion() {
       const pointsArray = this.teamAnswers.map(answer => (answer === this.correctAnswer ? 3 : 0));
       this.$emit('award-points', pointsArray); // Emit points to parent
       this.$emit('next-question'); // Emit event to parent to move to the next question
     },
+    toggleExpandedAnswer() {
+      this.showExpandedAnswer = !this.showExpandedAnswer;
+    },
     startTimer() {
       this.intervalId = setInterval(() => {
         if (this.timer > 0) {
           this.timer--;
         } else {
-          this.showCorrectAnswer(); // Show the correct answer when time is up
+          clearInterval(this.intervalId); // Stop the timer when time runs out
         }
       }, 1000);
     }
@@ -125,197 +211,255 @@ export default {
 </script>
 
 <style scoped>
+/* Main Container Styling */
 .question-container {
-  text-align: center;
-  padding: 30px;
-  background-color: #1e1e2f; /* Darker background */
-  color: #ffffff; /* White text for better contrast */
+  padding: 20px;
+  max-width: 700px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff; /* White background */
   border-radius: 10px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 800px; /* Max width for better responsiveness */
-  margin: 20px auto; /* Centered and spaced */
-  animation: slideIn 1s ease-out;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress Bar Styling */
+.progress-bar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  width: 80%;
+  height: 5px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  position: relative;
+}
+
+.progress {
+  height: 100%;
+  background-color: #3b82f6;
+  border-radius: 5px;
 }
 
 .timer {
   font-size: 1.2rem;
-  color: #ffcc00;
-  margin: 20px 0;
-  animation: pulse 1.5s infinite;
+  font-weight: bold;
+  color: black;
 }
 
-@keyframes slideIn {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
+/* Task Header */
+.task-header {
+  text-align: left;
+  margin-top: 20px;
 }
 
-.question-header {
-  margin-bottom: 20px;
+.task-header h3 {
+  font-size: 1.5rem;
 }
 
-.animated-header {
-  font-size: 2rem;
-  animation: pulse 1.5s infinite;
+.task-header p {
+  color: #555;
+  font-size: 1rem;
+  margin-top: 5px;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
+/* Tax Information Section */
+.tax-info-table {
+  margin-top: 20px;
 }
 
-.animated-section {
-  animation: fadeIn 1.2s ease-in;
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.tax-info {
-  margin: 20px 0;
-  animation: fadeInUp 1.5s ease-in;
-}
-
-.tax-bracket {
-  background-color: #34495e;
-  padding: 15px;
-  border-radius: 8px;
-  color: #ecf0f1;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.tax-info-table table {
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
+  border-collapse: collapse;
+}
+
+.tax-info-table th, .tax-info-table td {
+  padding: 10px;
   text-align: left;
 }
 
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.tax-info-table th {
+  background-color: #f4f4f4;
 }
 
-.animated-question {
-  animation: bounceIn 1.5s;
+.tax-info-table td {
+  border-bottom: 1px solid #ddd;
 }
 
-@keyframes bounceIn {
-  0% {
-    transform: scale(0.3);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.answers {
+/* Question Section */
+.question-section {
+  text-align: center;
   margin-top: 20px;
-  display: flex;
-  justify-content: space-around;
-  animation: fadeInUp 1.5s ease-in;
 }
 
-.results-container {
-  margin-top: 20px;
-  animation: fadeInUp 1.2s ease-in;
-}
-
-.correct-answer {
+.question-section p {
   font-size: 1.2rem;
-  margin-bottom: 10px;
-  color: #00e676; /* Green for correct */
+  font-weight: bold;
 }
 
-.team-answers {
-  margin-top: 40px;
-  animation: fadeIn 1.5s ease-in;
+.points {
+  font-size: 1rem;
+  color: #3b82f6;
 }
 
-.answer-label {
-  font-size: 1.2rem;
-  color: #ffffff;
-  margin-bottom: 20px;
-}
-
-.teams-container {
+/* Multiple Choice Section */
+.choices-container {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-top: 20px;
 }
 
-.team-box, .team-result-box {
-  text-align: center;
-  padding: 10px;
-  border-radius: 8px;
-  min-width: 60px;
-  background-color: #34495e;
-  color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.team-select {
-  width: 80px;
-  padding: 8px;
-  text-align: center;
-  border: 2px solid #34495e;
-  border-radius: 4px;
-  background-color: #ffffff;
-  color: #000000;
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.team-select:hover {
-  background-color: #2980b9;
-  color: #ffffff;
-}
-
-.animated-button {
-  background-color: #e74c3c;
-  margin-top: 30px;
-  padding: 12px 24px;
-  font-size: 1rem;
-  border-radius: 10px;
+.choice-button {
+  background-color: #e0f2ff;
+  padding: 10px 20px;
   border: none;
-  color: #fff;
+  border-radius: 10px;
+  color: #1e3a8a;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  font-size: 1rem;
 }
 
-.animated-button:hover {
-  background-color: #c0392b;
-  transform: scale(1.1);
+.choice-button:hover {
+  background-color: #bae6fd;
 }
 
-.next-question-button {
+/* Team Answer Section */
+.team-answer-section {
   margin-top: 30px;
+}
+
+.team-answer-section h4 {
+  text-align: center;
+}
+
+.team-answer-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.team-answer-container p {
+  color: black;
+}
+
+.team-answer-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.team-answer-box p {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.answer-select {
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background-color: #e0f2ff;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+/* Result Section */
+.result-section {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.correct-answer {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #10b981; /* Green color for correct answer */
+  margin-bottom: 5px;
+}
+
+/* Detailed Answer Section */
+.detailed-answer-toggle {
+  cursor: pointer;
+  color: #3b82f6;
+  font-size: 1.1rem;
+}
+
+.expanded-answer {
+  margin-top: 15px;
+  font-size: 1rem;
+}
+
+.expanded-answer table {
+  width: 100%;
+  margin-top: 15px;
+  border-collapse: collapse;
+}
+
+.expanded-answer th, .expanded-answer td {
+  padding: 10px;
+  text-align: left;
+}
+
+.expanded-answer th {
+  background-color: #f0f0f0;
+}
+
+.expanded-answer td {
+  border-bottom: 1px solid #ddd;
+}
+
+/* Team Answer Comparison */
+.team-answer-comparison {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.team-answer-box div {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.correct {
+  background-color: #10b981; /* Green for correct answers */
+  color: white;
+}
+
+.incorrect {
+  background-color: #ef4444; /* Red for incorrect answers */
+  color: white;
+}
+
+/* Submit Button */
+.submit-button {
+  display: block;
+  width: 100%;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.submit-button:hover {
+  background-color: #2563eb;
+}
+
+/* Next Button */
+.next-question-button {
   background-color: #1abc9c;
   padding: 12px 24px;
   font-size: 1rem;
@@ -323,21 +467,11 @@ export default {
   border: none;
   color: #fff;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-top: 20px;
 }
 
 .next-question-button:hover {
   background-color: #16a085;
   transform: scale(1.1);
-}
-
-.correct {
-  background-color: #2ecc71; /* Green */
-  color: white;
-}
-
-.incorrect {
-  background-color: #e74c3c; /* Red */
-  color: white;
 }
 </style>

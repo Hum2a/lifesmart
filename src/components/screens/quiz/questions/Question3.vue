@@ -1,66 +1,69 @@
 <template>
   <div class="question-container">
-    <div class="question-header">
-      <h2 class="animated-header">Investment Decision</h2>
+    <!-- Header and Progress Bar -->
+    <div class="progress-bar-container">
+      <div class="progress-bar">
+        <div class="progress" :style="{ width: progressBarWidth + '%' }"></div>
+      </div>
+      <div class="timer">{{ minutes }}:{{ seconds < 10 ? '0' + seconds : seconds }}</div>
     </div>
 
-    <div class="question-content animated-section">
-      <p>Ben inherits a £20,000 gift from an old uncle. He has several options on what to do with the money:</p>
+    <!-- Task Description -->
+    <div class="task-header">
+      <h3>Task 3</h3>
+      <p>Ben inherits a £20,000 gift from an old uncle. He has several options on what to do with the money.</p>
+    </div>
+
+    <!-- Assets and Liabilities Section -->
+    <div class="assets-liabilities-wrapper">
+      <img src="../../../../assets/task1.png" alt="Task 3 Image" class="task-image">
 
       <div class="assets-liabilities">
-        <div class="card assets-card">
-          <h3 class="card-title">Assets</h3>
-          <p>🏠 House - £200,000</p>
-          <p>🚗 Car - £50,000</p>
-          <p>💵 Cash - £20,000</p>
+        <div class="card">
+          <h4>Assets</h4>
+          <ul>
+            <li>🏠 House £200,000</li>
+            <li>🚗 Car £50,000</li>
+            <li>💵 Cash £20,000</li>
+          </ul>
         </div>
-        <div class="card liabilities-card">
-          <h3 class="card-title">Liabilities</h3>
-          <p>🏠 Mortgage (6%) - £150,000</p>
-          <p>🚗 Car Loan (10%) - £20,000</p>
+        <div class="card">
+          <h4>Liabilities</h4>
+          <ul>
+            <li>🏠 Mortgage £150,000 (6% interest)</li>
+            <li>🚗 Car Loan £20,000 (10% interest)</li>
+          </ul>
         </div>
-      </div>
-
-      <ul class="options-list animated-options">
-        <li>💼 Pay off some of his mortgage (house loan)</li>
-        <li>🚗 Pay off his car loan</li>
-        <li>📚 Spend the money on a training and self development course and take a holiday from work to have a break</li>
-        <li>🪙 Invest in a new cryptocurrency coin his friend has just bought (Skibidicoin)</li>
-        <li>🏦 Put the money in a savings account (paying 3% interest)</li>
-      </ul>
-
-      <p class="question">WHAT SHOULD HE DO WITH THE MONEY? <span class="points">10 Points</span></p>
-
-      <!-- Display the timer -->
-      <div class="timer">
-        Time Remaining: {{ minutes }}:{{ seconds < 10 ? '0' + seconds : seconds }}
       </div>
     </div>
 
-    <transition name="fade">
-      <div v-if="showResults" class="results-container animated-results">
-        <p class="correct-answer">Each answer has a different point value:</p>
-        <div class="teams-container">
-          <div
-            v-for="(team, index) in teams"
-            :key="index"
-            class="team-result-box"
-            :class="{ correct: teamAnswers[index] === correctAnswer, incorrect: teamAnswers[index] !== correctAnswer }"
-          >
-            <p>{{ team }}</p>
-            <p>{{ getPoints(teamAnswers[index]) }} Points</p>
-          </div>
-        </div>
-        <button class="next-question-button" @click="nextQuestion">Next Question</button>
+    <!-- Conditionally display answer options or result section -->
+    <div v-if="!showResults">
+      <!-- Question and Points Section -->
+      <div class="question-section">
+        <p>What should he do with the money?</p>
+        <p class="points">⚡ 10 points</p>
       </div>
 
-      <div v-else class="team-answers animated-answers">
-        <p class="answer-label">Select Your Answer:</p>
-        <div class="teams-container">
-          <div v-for="(team, index) in teams" :key="index" class="team-box">
-            <p>{{ team }}</p>
-            <select v-model="teamAnswers[index]" class="team-select">
-              <option value="" disabled>Select Answer</option>
+      <!-- Options List -->
+      <div class="options-list">
+        <ol>
+          <li>A. Pay off some of his mortgage (house loan)</li>
+          <li>B. Pay off his car loan</li>
+          <li>C. Spend the money on a training and self-development course</li>
+          <li>D. Invest in a new cryptocurrency coin his friend has just bought (Skibidicoin)</li>
+          <li>E. Put the money in a savings account (paying 3% interest)</li>
+        </ol>
+      </div>
+
+      <!-- Team Answer Section -->
+      <div class="team-answer-section">
+        <h4>Your answers</h4>
+        <div class="team-answer-container">
+          <div v-for="(team, index) in teams" :key="team.name" class="team-answer-box">
+            <p>{{ team.name }}</p>
+            <select v-model="teamAnswers[index]" class="answer-select">
+              <option value="" disabled>Select answer</option>
               <option value="A">A</option>
               <option value="B">B</option>
               <option value="C">C</option>
@@ -69,9 +72,64 @@
             </select>
           </div>
         </div>
-        <button class="show-answer-button animated-button" @click="showCorrectAnswer">Show Correct Answer</button>
       </div>
-    </transition>
+
+      <!-- Submit Button -->
+      <button class="submit-button" @click="submitAnswers">Submit</button>
+    </div>
+
+    <!-- Results Section -->
+    <div v-else class="result-section">
+      <h4>Points Breakdown:</h4>
+      <p class="points-breakdown">Points vary depending on your choice:</p>
+
+      <!-- Points Table -->
+      <div class="points-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Option</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>A. Pay off some of his mortgage</td>
+              <td>7 points</td>
+            </tr>
+            <tr>
+              <td>B. Pay off his car loan</td>
+              <td>10 points</td>
+            </tr>
+            <tr>
+              <td>C. Spend the money on training</td>
+              <td>8 points</td>
+            </tr>
+            <tr>
+              <td>D. Invest in cryptocurrency</td>
+              <td>6 points</td>
+            </tr>
+            <tr>
+              <td>E. Put money in savings</td>
+              <td>4 points</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Team Answers with Points -->
+      <div class="team-answer-comparison">
+        <div v-for="(team, index) in teams" :key="team.name" class="team-answer-box">
+          <p>{{ team.name }}</p>
+          <div class="points-earned">
+            {{ getPoints(teamAnswers[index]) }} points
+          </div>
+        </div>
+      </div>
+
+      <!-- Next Button -->
+      <button class="next-question-button" @click="nextQuestion">Next</button>
+    </div>
   </div>
 </template>
 
@@ -86,11 +144,17 @@ export default {
   },
   data() {
     return {
-      teamAnswers: Array(this.teams.length).fill(''), // Initialize with empty answers
-      showResults: false, // To control the display of results
-      pointsMapping: { 'A': 7, 'B': 10, 'C': 8, 'D': 6, 'E': 4 }, // Points for each answer
-      timer: 480, // 8 minutes in seconds
-      intervalId: null, // To store the interval ID for the timer
+      teamAnswers: Array(this.teams.length).fill(''), // Initialize with empty answers for each team
+      showResults: false,
+      timer: 480, // Timer starts at 8 minutes
+      intervalId: null,
+      pointsMapping: {
+        A: 7,
+        B: 10,
+        C: 8,
+        D: 6,
+        E: 4
+      }
     };
   },
   computed: {
@@ -99,27 +163,30 @@ export default {
     },
     seconds() {
       return this.timer % 60;
+    },
+    progressBarWidth() {
+      return (this.timer / 480) * 100; // Calculate progress bar width based on time remaining
     }
   },
   methods: {
-    showCorrectAnswer() {
+    submitAnswers() {
       this.showResults = true;
-      clearInterval(this.intervalId); // Stop the timer
+      clearInterval(this.intervalId); // Clear the timer after submission
+    },
+    getPoints(answer) {
+      return this.pointsMapping[answer] || 0;
     },
     nextQuestion() {
       const pointsArray = this.teamAnswers.map(answer => this.getPoints(answer));
       this.$emit('award-points', pointsArray); // Emit points to parent
       this.$emit('next-question'); // Emit event to parent to move to the next question
     },
-    getPoints(answer) {
-      return this.pointsMapping[answer] || 0; // Get points for the answer or 0 if no answer
-    },
     startTimer() {
       this.intervalId = setInterval(() => {
         if (this.timer > 0) {
           this.timer--;
         } else {
-          this.showCorrectAnswer(); // Show the correct answer when time is up
+          clearInterval(this.intervalId); // Stop the timer when time runs out
         }
       }, 1000);
     }
@@ -134,223 +201,246 @@ export default {
 </script>
 
 <style scoped>
+/* Main Container Styling */
 .question-container {
-  text-align: center;
-  padding: 30px;
-  background-color: #1e1e2f; /* Darker background */
-  color: #ffffff; /* White text for better contrast */
+  padding: 20px;
+  max-width: 700px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
   border-radius: 10px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 800px; /* Max width for better responsiveness */
-  margin: 20px auto; /* Centered and spaced */
-  animation: slideIn 1s ease-out;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress Bar Styling */
+.progress-bar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  width: 80%;
+  height: 5px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  position: relative;
+}
+
+.progress {
+  height: 100%;
+  background-color: #3b82f6;
+  border-radius: 5px;
 }
 
 .timer {
   font-size: 1.2rem;
-  color: #ffcc00;
-  margin: 20px 0;
-  animation: pulse 1.5s infinite;
+  font-weight: bold;
+  color: black;
 }
 
-@keyframes slideIn {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
+/* Task Header */
+.task-header {
+  text-align: left;
+  margin-top: 20px;
 }
 
-.question-header {
-  margin-bottom: 20px;
+.task-header h3 {
+  font-size: 1.5rem;
 }
 
-.animated-header {
-  font-size: 2rem;
-  animation: pulse 1.5s infinite;
+.task-header p {
+  color: #555;
+  font-size: 1rem;
+  margin-top: 5px;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
+/* Assets and Liabilities Section */
+.assets-liabilities-wrapper {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
 }
 
-.animated-section {
-  animation: fadeIn 1.2s ease-in;
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
+.task-image {
+  width: 200px;
+  margin-right: 20px;
 }
 
 .assets-liabilities {
   display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px;
-  animation: fadeIn 1.2s ease-in;
+  flex-direction: row;
+  gap: 20px;
 }
 
 .card {
-  background-color: #2c3e50;
-  border-radius: 8px;
-  padding: 15px;
-  color: #ecf0f1;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 45%;
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 180px;
 }
 
-.card-title {
-  margin-bottom: 10px;
+.card h4 {
   font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.card li {
+  margin-bottom: 8px;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Question Section */
+.question-section {
   text-align: center;
+  margin-top: 20px;
 }
 
-.options-list {
-  text-align: left;
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #34495e;
-  border-radius: 8px;
-  animation: slideIn 1s ease-out;
-}
-
-.animated-options li {
-  padding: 5px 0;
-  color: #ecf0f1;
-}
-
-.question {
-  color: red;
+.question-section p {
+  font-size: 1.2rem;
   font-weight: bold;
-  animation: bounceIn 1.5s;
-}
-
-@keyframes bounceIn {
-  0% {
-    transform: scale(0.3);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
-  }
 }
 
 .points {
-  font-weight: normal;
+  font-size: 1rem;
+  color: #3b82f6;
+}
+
+/* Options List */
+.options-list {
+  margin-top: 20px;
+  background-color: #e0f7fa;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.options-list ol {
+  list-style-type: none;
+  padding: 0;
+}
+
+.options-list li {
+  margin-bottom: 10px;
+  font-size: 1rem;
   color: black;
 }
 
-.answers {
-  margin-top: 20px;
-  display: flex;
-  justify-content: space-around;
-  animation: fadeInUp 1.5s ease-in;
+/* Team Answer Section */
+.team-answer-section {
+  margin-top: 30px;
 }
 
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.team-answer-section h4 {
+  text-align: center;
 }
 
-.results-container {
-  margin-top: 20px;
-  animation: fadeInUp 1.2s ease-in;
-}
-
-.correct-answer {
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-  color: #00e676;
-}
-
-.team-answers {
-  margin-top: 40px;
-  animation: fadeIn 1.5s ease-in;
-}
-
-.answer-label {
-  font-size: 1.2rem;
-  color: #ffffff;
-  margin-bottom: 20px;
-}
-
-.teams-container {
+.team-answer-container {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 20px;
+  margin-top: 10px;
 }
 
-.team-box, .team-result-box {
-  text-align: center;
-  padding: 10px;
-  border-radius: 8px;
-  min-width: 60px;
-  background-color: #34495e;
-  color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+.team-answer-box p {
+  color: black;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 
-.team-select {
-  width: 80px;
+.answer-select {
   padding: 8px;
-  text-align: center;
-  border: 2px solid #34495e;
-  border-radius: 4px;
-  background-color: #ffffff;
-  color: #000000;
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.team-select:hover {
-  background-color: #2980b9;
-  color: #ffffff;
-}
-
-.animated-button {
-  background-color: #e74c3c;
-  margin-top: 30px;
-  padding: 12px 24px;
-  font-size: 1rem;
   border-radius: 10px;
+  border: 1px solid #ccc;
+  background-color: #e0f2ff;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+/* Result Section */
+.result-section {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.points-breakdown {
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+.points-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.points-table th, .points-table td {
+  padding: 10px;
+  text-align: left;
+}
+
+.points-table th {
+  background-color: #f4f4f4;
+}
+
+.points-table td {
+  border-bottom: 1px solid #ddd;
+}
+
+/* Team Answer Comparison */
+.team-answer-comparison {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.team-answer-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.points-earned {
+  width: 80px;
+  height: 50px;
+  border-radius: 10px;
+  background-color: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* Submit Button */
+.submit-button {
+  display: block;
+  width: 100%;
+  background-color: #3b82f6;
+  color: white;
   border: none;
-  color: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 1.2rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-top: 20px;
 }
 
-.animated-button:hover {
-  background-color: #c0392b;
-  transform: scale(1.1);
+.submit-button:hover {
+  background-color: #2563eb;
 }
 
+/* Next Button */
 .next-question-button {
-  margin-top: 30px;
   background-color: #1abc9c;
   padding: 12px 24px;
   font-size: 1rem;
@@ -358,21 +448,11 @@ export default {
   border: none;
   color: #fff;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-top: 20px;
 }
 
 .next-question-button:hover {
   background-color: #16a085;
   transform: scale(1.1);
-}
-
-.correct {
-  background-color: #2ecc71; /* Green */
-  color: white;
-}
-
-.incorrect {
-  background-color: #e74c3c; /* Red */
-  color: white;
 }
 </style>
