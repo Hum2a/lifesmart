@@ -1,65 +1,25 @@
 <template>
   <div class="financial-quiz">
-    <!-- Header -->
-    <header class="header">
-      <h1 class="header-title">Financial Quiz</h1>
-    </header>
-
-    <!-- Main Content -->
     <main class="main-content">
-      <!-- Render the question component if quiz is not complete -->
+      <!-- Show the leaderboard between questions -->
+      <Leaderboard
+        v-if="showLeaderboard"
+        :teams="sortedTeams"
+        @next-question="nextQuestion"
+      ></Leaderboard>
+
+      <!-- Render the question component if quiz is not complete and leaderboard is not showing -->
       <component
-        v-if="!quizComplete"
+        v-if="!quizComplete && !showLeaderboard"
         :is="currentQuestionComponent"
         :teams="teams"
         @answer="handleAnswer"
-        @next-question="nextQuestion"
+        @next-question="showLeaderboardAfterQuestion"
         @award-points="updateScores"
       ></component>
 
-      <!-- Display current scores after each question -->
-      <div v-if="!quizComplete" class="scoreboard">
-        <h3>Current Scores:</h3>
-        <table class="scores-table">
-          <thead>
-            <tr>
-              <th>Team Name</th>
-              <th>Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(team, index) in teams" :key="index">
-              <td>{{ team.name }}</td>
-              <td>{{ team.points }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Render the results screen if quiz is complete -->
-      <div v-else class="results-screen">
-        <h2>Quiz Complete!</h2>
-        <p>Thank you for participating.</p>
-        <h3>Final Scores:</h3>
-        <table class="results-table">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Team Name</th>
-              <th>Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(team, index) in sortedTeams" :key="index">
-              <td>{{ index + 1 }}</td>
-              <td>{{ team.name }}</td>
-              <td>{{ team.points }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <button @click="goHome" class="home-button">Go to Home</button>
-        <button @click="saveResultsAndNavigate" class="simulation-button">Go to Simulation</button>
-      </div>
+      <!-- Render the enhanced results screen if quiz is complete -->
+      <ResultsScreen v-else :teams="teams" @go-home="goHome" @save-results="saveResultsAndNavigate" />
     </main>
 
     <!-- Footer -->
@@ -72,7 +32,9 @@
 <script>
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getFirestore, collection, setDoc, doc } from 'firebase/firestore';
+import { getFirestore, collection, setDoc, doc, getDocs, deleteDoc } from 'firebase/firestore';
+import Leaderboard from './Leaderboard.vue';
+import ResultsScreen from './ResultsScreen.vue'; // Import ResultsScreen component
 
 // Import all question components
 import Question1 from './questions/Question1.vue';
@@ -83,18 +45,29 @@ import Question5 from './questions/Question5.vue';
 
 export default {
   name: 'FinancialQuiz',
+  components: {
+    Leaderboard,
+    ResultsScreen // Register ResultsScreen component
+  },
   setup() {
     const route = useRoute();
     const router = useRouter();
     const db = getFirestore();
 
     const teams = ref(
-      route.query.teams ? route.query.teams.split(',').map(name => ({ name, points: 0 })) : []
+      route.query.teams
+        ? route.query.teams.split(',').map(name => ({ 
+            name, 
+            points: 0, 
+            taskScores: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } // Initialize taskScores for each task
+          }))
+        : []
     );
 
     const currentQuestionIndex = ref(0);
     const totalQuestions = 5;
     const quizComplete = ref(false);
+    const showLeaderboard = ref(false);
 
     const questionComponents = [
       Question1,
@@ -116,11 +89,18 @@ export default {
 
     const updateScores = (scores) => {
       scores.forEach((points, index) => {
+        const currentTask = currentQuestionIndex.value + 1;
         teams.value[index].points += points;
+        teams.value[index].taskScores[currentTask] = points; // Update task-specific points
       });
     };
 
+    const showLeaderboardAfterQuestion = () => {
+      showLeaderboard.value = true; // Show the leaderboard after each question
+    };
+
     const nextQuestion = () => {
+      showLeaderboard.value = false; // Hide the leaderboard before moving to the next question
       if (currentQuestionIndex.value < totalQuestions - 1) {
         currentQuestionIndex.value += 1;
       } else {
@@ -135,18 +115,34 @@ export default {
     const saveResultsAndNavigate = async () => {
       const teamsCollectionRef = collection(db, 'Quiz', 'Quiz Simulations', 'Teams');
 
-      // Save each team's data to the Teams collection
-      for (const team of sortedTeams.value) {
-        const teamDocRef = doc(teamsCollectionRef, team.name);
-        await setDoc(teamDocRef, {
-          name: team.name,
-          points: team.points
+      try {
+        // Step 1: Retrieve and delete all existing team documents
+        const snapshot = await getDocs(teamsCollectionRef);
+
+        const deletePromises = snapshot.docs.map(docSnapshot => deleteDoc(docSnapshot.ref));
+        await Promise.all(deletePromises); // Wait until all deletion operations are done
+
+        console.log('All old teams deleted from Firebase.');
+
+        // Step 2: Save each new team's data from the current session
+        const savePromises = sortedTeams.value.map(team => {
+          const teamDocRef = doc(teamsCollectionRef, team.name);
+          return setDoc(teamDocRef, {
+            name: team.name,
+            points: team.points
+          });
         });
+
+        await Promise.all(savePromises); // Wait until all saving operations are done
+
+        console.log('New results saved to Firebase:', sortedTeams.value);
+
+        // Step 3: Navigate to the next screen only after all operations are complete
+        router.push({ name: 'QuizSimulation' });
+
+      } catch (error) {
+        console.error('Error during saving results to Firebase:', error);
       }
-
-      console.log('Results saved to Firebase:', sortedTeams.value);
-
-      router.push({ name: 'QuizSimulation' }); // Navigate to Quiz Simulation
     };
 
     return {
@@ -159,8 +155,10 @@ export default {
       handleAnswer,
       updateScores,
       nextQuestion,
+      showLeaderboardAfterQuestion,
       goHome,
       saveResultsAndNavigate, // Use this function to save results and navigate
+      showLeaderboard,
     };
   },
 };
@@ -171,7 +169,6 @@ export default {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #1a237e; /* Dark Blue Background */
   color: #ffffff; /* White Text */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding: 0;
@@ -180,7 +177,6 @@ export default {
 }
 
 .header {
-  background-color: #283593;
   padding: 20px;
   text-align: center;
 }
