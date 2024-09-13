@@ -55,7 +55,6 @@
   }
   
   .header {
-    background-color: #283593; /* Slightly lighter dark blue */
     padding: 20px;
     text-align: center;
   }
