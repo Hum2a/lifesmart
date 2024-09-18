@@ -11,27 +11,43 @@
     <!-- Task Description -->
     <div class="task-header">
       <h3>Task 3</h3>
-      <p>Ben inherits a £20,000 gift from an old uncle. He has several options on what to do with the money.</p>
+      <div class="task-header-question">
+        <p>Ben inherits a £20,000 gift from an old uncle. He has several options on what to do with the money.</p>
+        <img src="../../../../assets/bluecash.png" alt="Task 3 Image" class="task-image">
+      </div>
     </div>
 
     <!-- Assets and Liabilities Section -->
     <div class="assets-liabilities-wrapper">
-      <img src="../../../../assets/task1.png" alt="Task 3 Image" class="task-image">
-
       <div class="assets-liabilities">
         <div class="card">
           <h4>Assets</h4>
           <ul>
-            <li>🏠 House £200,000</li>
-            <li>🚗 Car £50,000</li>
-            <li>💵 Cash £20,000</li>
+            <li>
+              <span class="asset-icon">🏠 House</span>
+              <span class="asset-value">£200,000</span>
+            </li>
+            <li>
+              <span class="asset-icon">🚗 Car</span>
+              <span class="asset-value">£50,000</span>
+            </li>
+            <li>
+              <span class="asset-icon">💵 Cash</span>
+              <span class="asset-value">£20,000</span>
+            </li>
           </ul>
         </div>
         <div class="card">
           <h4>Liabilities</h4>
           <ul>
-            <li>🏠 Mortgage £150,000 (6% interest)</li>
-            <li>🚗 Car Loan £20,000 (10% interest)</li>
+            <li>
+              <span class="asset-icon">🏠 Mortgage (6%)</span>
+              <span class="asset-value">£150,000</span>
+            </li>
+            <li>
+              <span class="asset-icon">🚗 Car Loan (10%)</span>
+              <span class="asset-value">£20,000</span>
+            </li>
           </ul>
         </div>
       </div>
@@ -42,11 +58,14 @@
       <!-- Question and Points Section -->
       <div class="question-section">
         <p>What should he do with the money?</p>
-        <p class="points">⚡ 10 points</p>
+        <div class="points-section">
+          <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
+          <p class="points">10 points</p>
+        </div>
       </div>
 
-      <!-- Options List -->
-      <div class="options-list">
+      <!-- Options List Before Submission -->
+      <div class="options-list-before">
         <ol>
           <li>A. Pay off some of his mortgage (house loan)</li>
           <li>B. Pay off his car loan</li>
@@ -81,40 +100,42 @@
     <!-- Results Section -->
     <div v-else class="result-section">
       <h4>Points Breakdown:</h4>
-      <p class="points-breakdown">Points vary depending on your choice:</p>
+      <p class="points-breakdown">Here’s how many points each option scores:</p>
 
-      <!-- Points Table -->
-      <div class="points-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Option</th>
-              <th>Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>A. Pay off some of his mortgage</td>
-              <td>7 points</td>
-            </tr>
-            <tr>
-              <td>B. Pay off his car loan</td>
-              <td>10 points</td>
-            </tr>
-            <tr>
-              <td>C. Spend the money on training</td>
-              <td>8 points</td>
-            </tr>
-            <tr>
-              <td>D. Invest in cryptocurrency</td>
-              <td>6 points</td>
-            </tr>
-            <tr>
-              <td>E. Put money in savings</td>
-              <td>4 points</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Options List After Submission -->
+      <div class="options-list-after">
+        <ol>
+          <li>
+            <span class="option-text">A. Pay off some of his mortgage (house loan)</span>
+            <span class="points-display">
+              <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 7 points
+            </span>
+          </li>
+          <li>
+            <span class="option-text">B. Pay off his car loan</span>
+            <span class="points-display">
+              <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 10 points
+            </span>
+          </li>
+          <li>
+            <span class="option-text">C. Spend the money on a training and self-development course</span>
+            <span class="points-display">
+              <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 8 points
+            </span>
+          </li>
+          <li>
+            <span class="option-text">D. Invest in a new cryptocurrency coin his friend has just bought (Skibidicoin)</span>
+            <span class="points-display">
+              <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 6 points
+            </span>
+          </li>
+          <li>
+            <span class="option-text">E. Put the money in a savings account (paying 3% interest)</span>
+            <span class="points-display">
+              <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 4 points
+            </span>
+          </li>
+        </ol>
       </div>
 
       <!-- Team Answers with Points -->
@@ -242,8 +263,11 @@ export default {
 
 /* Task Header */
 .task-header {
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
   margin-top: 20px;
+  color: black;
 }
 
 .task-header h3 {
@@ -254,6 +278,13 @@ export default {
   color: #555;
   font-size: 1rem;
   margin-top: 5px;
+  font-weight: bold;
+}
+
+.task-header-question {
+  display: flex;
+  flex-direction: row;
+  align-items: center
 }
 
 /* Assets and Liabilities Section */
@@ -276,16 +307,17 @@ export default {
 }
 
 .card {
-  background-color: #f8f9fa;
+  background-color:#ECECEC;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 180px;
+  width: 300px;
 }
 
 .card h4 {
   font-size: 1.2rem;
   margin-bottom: 10px;
+  color: #000000B2;
 }
 
 .card ul {
@@ -294,9 +326,29 @@ export default {
 }
 
 .card li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 8px;
   font-size: 1rem;
-  color: #333;
+  color: #000000;
+}
+
+/* .card li span {
+  flex-grow: 1;
+} */
+
+.asset-icon {
+  margin-right: 10px;
+}
+
+.asset-name {
+  flex-grow: 1; /* Ensures the name takes up the remaining space */
+}
+
+.asset-value {
+  margin-left: 20px;
+  font-weight: bold;
 }
 
 /* Question Section */
@@ -310,28 +362,105 @@ export default {
   font-weight: bold;
 }
 
+.points-section {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
 .points {
   font-size: 1rem;
   color: #3b82f6;
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
-/* Options List */
-.options-list {
+.lightning-bolt {
+  width: 20px;
+}
+
+/* Before Submission: Options List */
+.options-list-before {
   margin-top: 20px;
-  background-color: #e0f7fa;
-  padding: 15px;
-  border-radius: 10px;
-}
-
-.options-list ol {
-  list-style-type: none;
   padding: 0;
 }
 
-.options-list li {
-  margin-bottom: 10px;
-  font-size: 1rem;
+.options-list-before ol {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.options-list-before li {
+  background-color: #B8CEF0;
+  padding: 15px;
+  border-radius: 15px;
+  font-size: 1.1rem;
   color: black;
+  font-weight: bold;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.options-list-before li:hover {
+  background-color: #9bb6d9;
+}
+
+/* After Submission: Options List with Points */
+.options-list-after {
+  margin-top: 20px;
+  padding: 0;
+}
+
+.options-list-after ol {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.options-list-after li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+/* 
+.options-list-after li:hover {
+  background-color: #9bb6d9;
+} */
+
+.option-text {
+  flex: 1;
+  margin-right: 20px; /* Creates space between the text and the points */
+  background-color: #B8CEF0;
+  padding: 15px;
+  border-radius: 15px;
+  font-size: 1.1rem;
+  color: black;
+  font-weight: bold;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.options-text:hover {
+  background-color: #9bb6d9;
+}
+
+.points-display {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  color: #003F91;
+  padding: 5px 10px;
+  border-radius: 15px;
+}
+
+.points-display .lightning-bolt {
+  width: 20px;
+  margin-right: 5px;
 }
 
 /* Team Answer Section */
