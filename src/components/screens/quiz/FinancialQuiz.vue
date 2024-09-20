@@ -1,25 +1,25 @@
 <template>
   <div class="financial-quiz">
     <main class="main-content">
-      <!-- Show the leaderboard between questions -->
-      <Leaderboard
-        v-if="showLeaderboard"
+      <!-- Show the results screen between questions -->
+      <ResultsScreen
+        v-if="showResults"
         :teams="sortedTeams"
         @next-question="nextQuestion"
-      ></Leaderboard>
+      ></ResultsScreen>
 
-      <!-- Render the question component if quiz is not complete and leaderboard is not showing -->
+      <!-- Render the question component if quiz is not complete and results screen is not showing -->
       <component
-        v-if="!quizComplete && !showLeaderboard"
+        v-if="!quizComplete && !showResults"
         :is="currentQuestionComponent"
         :teams="teams"
         @answer="handleAnswer"
-        @next-question="showLeaderboardAfterQuestion"
+        @next-question="showResultsAfterQuestion"
         @award-points="updateScores"
       ></component>
 
-      <!-- Render the enhanced results screen if quiz is complete -->
-      <ResultsScreen v-else :teams="teams" @go-home="goHome" @save-results="saveResultsAndNavigate" />
+      <!-- Render the final results screen if quiz is complete -->
+      <ResultsScreen v-else-if="quizComplete" :teams="teams" @go-home="goHome" @save-results="saveResultsAndNavigate" />
     </main>
 
     <!-- Footer -->
@@ -33,7 +33,6 @@
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getFirestore, collection, setDoc, doc, getDocs, deleteDoc } from 'firebase/firestore';
-import Leaderboard from './Leaderboard.vue';
 import ResultsScreen from './ResultsScreen.vue'; // Import ResultsScreen component
 
 // Import all question components
@@ -42,11 +41,11 @@ import Question2 from './questions/Question2.vue';
 import Question3 from './questions/Question3.vue';
 import Question4 from './questions/Question4.vue';
 import Question5 from './questions/Question5.vue';
+import Question6 from './questions/Question6.vue';
 
 export default {
   name: 'FinancialQuiz',
   components: {
-    Leaderboard,
     ResultsScreen // Register ResultsScreen component
   },
   setup() {
@@ -65,9 +64,9 @@ export default {
     );
 
     const currentQuestionIndex = ref(0);
-    const totalQuestions = 5;
+    const totalQuestions = 6;
     const quizComplete = ref(false);
-    const showLeaderboard = ref(false);
+    const showResults = ref(false); // Control for showing results screen between questions
 
     const questionComponents = [
       Question1,
@@ -75,6 +74,7 @@ export default {
       Question3,
       Question4,
       Question5,
+      Question6
     ];
 
     const currentQuestionComponent = computed(() => questionComponents[currentQuestionIndex.value]);
@@ -95,12 +95,12 @@ export default {
       });
     };
 
-    const showLeaderboardAfterQuestion = () => {
-      showLeaderboard.value = true; // Show the leaderboard after each question
+    const showResultsAfterQuestion = () => {
+      showResults.value = true; // Show the results screen after each question
     };
 
     const nextQuestion = () => {
-      showLeaderboard.value = false; // Hide the leaderboard before moving to the next question
+      showResults.value = false; // Hide the results screen before moving to the next question
       if (currentQuestionIndex.value < totalQuestions - 1) {
         currentQuestionIndex.value += 1;
       } else {
@@ -155,10 +155,10 @@ export default {
       handleAnswer,
       updateScores,
       nextQuestion,
-      showLeaderboardAfterQuestion,
+      showResultsAfterQuestion,
       goHome,
       saveResultsAndNavigate, // Use this function to save results and navigate
-      showLeaderboard,
+      showResults, // Control for showing/hiding results
     };
   },
 };
@@ -193,6 +193,7 @@ export default {
   align-items: center;
   justify-content: center;
   width: 100%;
+  height: 100%;
 }
 
 .scoreboard, .results-screen {

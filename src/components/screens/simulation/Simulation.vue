@@ -53,7 +53,18 @@ export default {
       simulationInterval: null,
       isUpdating: false, // Flag to prevent multiple clicks
       updateQueue: [], // Queue to handle multiple update requests
-      fixedColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+      fixedColors: [
+        '#FF6384',  // Red
+        '#36A2EB',  // Blue
+        '#FFCE56',  // Yellow
+        '#4BC0C0',  // Teal
+        '#9966FF',  // Purple
+        '#FF9F40',  // Orange
+        '#8B0000',  // Dark Red
+        '#00FF7F',  // Spring Green
+        '#FFD700',  // Gold
+        '#4682B4'   // Steel Blue
+      ],
     };
   },
   computed: {
@@ -328,6 +339,7 @@ export default {
         fill: false,
         cubicInterpolationMode: 'monotone', // Add this line
         tension: 0.4, // Add this line to make the lines more curved
+        borderDash: index > 5 ? [5, 5] : [], // Apply dotted line for index > 5
       }));
 
       this.portfolioChart.value = new Chart(ctx, {
@@ -353,6 +365,19 @@ export default {
               display: true,
               text: 'Total Portfolio Value Over Time',
             },
+            tooltip: {
+              enabled: true,
+              callbacks: {},
+              titleFont: {
+                size: 18, // Increase tooltip title font size
+              },
+              bodyFont: {
+                size: 16, // Increase tooltip body font size
+              },
+              footerFont: {
+                size: 14, // Increase tooltip footer font size
+              },
+            },
           },
           scales: {
             x: {
@@ -374,6 +399,7 @@ export default {
 
       console.log("initializeChart: chart initialized", this.portfolioChart.value);
     },
+
     async updateChart() {
       console.log("updateChart: start");
 
@@ -405,6 +431,7 @@ export default {
         fill: false,
         cubicInterpolationMode: 'monotone', // Add this line
         tension: 0.4, // Add this line to make the lines more curved
+        borderDash: index > 5 ? [5, 5] : [], // Apply dotted line for index > 5
       }));
 
       if (this.portfolioChart.value) {
@@ -416,6 +443,7 @@ export default {
 
       console.log("updateChart: chart updated", this.portfolioChart.value);
     },
+
     getRandomColor() {
       const letters = '0123456789ABCDEF';
       let color = '#';

@@ -1,19 +1,78 @@
 <template>
   <div class="question-container">
+
     <!-- Header and Progress Bar -->
     <div class="progress-bar-container">
       <div class="progress-bar">
         <div class="progress" :style="{ width: progressBarWidth + '%' }"></div>
       </div>
-      <div class="timer">{{ minutes }}:{{ seconds < 10 ? '0' + seconds : seconds }}</div>
+
+      <!-- Timer or Start Button -->
+      <div class="timer-container">
+        <button v-if="!timerStarted" @click="startTimer" class="start-timer-button">
+          ⏳ {{ minutes }}:{{ seconds < 10 ? '0' + seconds : seconds }} Start Timer
+        </button>
+        <div v-else class="timer">
+          ⏳ {{ minutes }}:{{ seconds < 10 ? '0' + seconds : seconds }}
+        </div>
+      </div>
     </div>
 
     <!-- Task Description -->
     <div class="task-header">
-      <h3>Task 3</h3>
+      <div class="top-layer">
+        <h3>Task 3</h3>
+        <div class="button-container">
+          <button class="glossary-button" @click="showGlossary = true">Glossary</button>
+          <!-- <button class="hint-button" @click="showHintModal = true">Hint?</button> -->
+        </div>
+      </div>
       <div class="task-header-question">
         <p>Ben inherits a £20,000 gift from an old uncle. He has several options on what to do with the money.</p>
         <img src="../../../../assets/bluecash.png" alt="Task 3 Image" class="task-image">
+      </div>
+    </div>
+
+     <!-- Glossary Sidebar -->
+     <div v-if="showGlossary" class="glossary-sidebar">
+      <div class="glossary-header">
+        <h2>📖 Glossary</h2>
+        <button class="close-button" @click="showGlossary = false">X</button>
+      </div>
+      <div class="glossary-content">
+        <h3>Assets</h3>
+        <p>Things you own that are worth money. For example, if you have a bicycle, some books, or a little money in a piggy bank, those are all your assets.</p>
+        <h3>Liabilities</h3>
+        <p>Money you owe to someone else. If you borrowed money from your friend to buy a new game and you have to give it back, that money is a liability.</p>
+        <h3>Income Tax</h3>
+        <p>A portion of the money that people earn from their jobs or other places, which they need to give to the government. This money helps pay for things like schools, roads, and hospitals.</p>
+        <h3>Tax Rates</h3>
+        <p>This tells you how much income tax you need to pay. It’s like a rule that says how much money you give to the government based on how much money you make.</p>
+        <h3>Mortgage</h3>
+        <p>A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.</p>
+        <h3>Cryptocurrency</h3>
+        <p>A type of money you can use on a computer but can't touch like coins or bills. It’s made using special computer codes and you can use it to buy things online.</p>
+        <h3>Stocks Fund Portfolio</h3>
+        <p>A basket of different companies that are all put together. When you buy a part of the basket, you own a small piece of all the companies in it. This helps spread the risk because if one company doesn't do well, others in the basket might still grow!</p>
+        <h3>S&P 500</h3>
+        <p>A list of the 500 biggest and most important companies in America. If you invest in the S&P 500, you’re buying a little piece of each of those 500 companies. </p>
+        <h3>Interest</h3>
+        <p>If you save your money in a bank, the bank pays you extra money for letting them keep it there. This extra money is called interest.</p>
+        <h3>Compound Interest</h3>
+        <p>This is when you get interest on both the money you saved and the extra money (interest) you earned before. It's like your money making more money because the interest starts earning interest too!</p>
+        <h3>Annual Return</h3>
+        <p>This is how much money you make or lose from an investment in a year. It tells you how good or bad the investment did.</p>
+        <h3>Credit Rating</h3>
+        <p>A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.</p>
+      </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div v-if="showHintModal" class="hint-modal-overlay">
+      <div class="hint-modal">
+        <h3>Hint</h3>
+        <p>Net worth = Total Assets – Total Liabilities</p>
+        <button @click="showHintModal = false" class="close-modal-button">Close</button>
       </div>
     </div>
 
@@ -105,35 +164,204 @@
       <!-- Options List After Submission -->
       <div class="options-list-after">
         <ol>
-          <li>
-            <span class="option-text">A. Pay off some of his mortgage (house loan)</span>
-            <span class="points-display">
-              <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 7 points
-            </span>
+          <li @click="toggleDetails('A')">
+            <div class="top">
+              <span class="option-text">A. Pay off some of his mortgage (house loan)</span>
+              <span class="points-display">
+                <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 7 points
+              </span>
+            </div>
+            <div v-if="detailsVisible.A" class="details-content">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Assets</th>
+                    <th>Liabilities</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>House £200,000</td>
+                    <td>Mortgage £150,000</td>
+                  </tr>
+                  <tr>
+                    <td>Car £50,000</td>
+                    <td>Car Loan £20,000</td>
+                  </tr>
+                  <tr>
+                    <td>Cash £28,000</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Total: £278,000</strong></td>
+                    <td><strong>Total: £170,000</strong></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2"><strong>Net Worth = £128,000</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </li>
-          <li>
-            <span class="option-text">B. Pay off his car loan</span>
-            <span class="points-display">
-              <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 10 points
-            </span>
+
+          <li @click="toggleDetails('B')">
+            <div class="top">
+              <span class="option-text">B. Pay off his car loan</span>
+              <span class="points-display">
+                <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 10 points
+              </span>
+            </div>
+            <div v-if="detailsVisible.B" class="details-content">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Assets</th>
+                    <th>Liabilities</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>House £200,000</td>
+                    <td>Mortgage £150,000</td>
+                  </tr>
+                  <tr>
+                    <td>Car £50,000</td>
+                    <td>Car Loan £0</td>
+                  </tr>
+                  <tr>
+                    <td>Cash £35,000</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Total: £285,000</strong></td>
+                    <td><strong>Total: £150,000</strong></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2"><strong>Net Worth = £135,000</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </li>
-          <li>
-            <span class="option-text">C. Spend the money on a training and self-development course</span>
-            <span class="points-display">
-              <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 8 points
-            </span>
+
+          <li @click="toggleDetails('C')">
+            <div class="top">
+              <span class="option-text">C. Spend the money on a training and self-development course</span>
+              <span class="points-display">
+                <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 8 points
+              </span>
+            </div>
+            <div v-if="detailsVisible.C" class="details-content">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Assets</th>
+                    <th>Liabilities</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>House £200,000</td>
+                    <td>Mortgage £150,000</td>
+                  </tr>
+                  <tr>
+                    <td>Car £50,000</td>
+                    <td>Car Loan £20,000</td>
+                  </tr>
+                  <tr>
+                    <td>Cash £50,000</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Total: £300,000</strong></td>
+                    <td><strong>Total: £170,000</strong></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2"><strong>Net Worth = £130,000</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </li>
-          <li>
-            <span class="option-text">D. Invest in a new cryptocurrency coin his friend has just bought (Skibidicoin)</span>
-            <span class="points-display">
-              <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 6 points
-            </span>
+
+          <li @click="toggleDetails('D')">
+            <div class="top">
+              <span class="option-text">D. Invest in a new cryptocurrency coin his friend has just bought (Skibidicoin)</span>
+              <span class="points-display">
+                <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 6 points
+              </span>
+            </div>
+            <div v-if="detailsVisible.D" class="details-content">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Assets</th>
+                    <th>Liabilities</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>House £200,000</td>
+                    <td>Mortgage £150,000</td>
+                  </tr>
+                  <tr>
+                    <td>Car £50,000</td>
+                    <td>Car Loan £20,000</td>
+                  </tr>
+                  <tr>
+                    <td>Cash £25,000</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Total: £275,000</strong></td>
+                    <td><strong>Total: £170,000</strong></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2"><strong>Net Worth = £105,000</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </li>
-          <li>
-            <span class="option-text">E. Put the money in a savings account (paying 3% interest)</span>
-            <span class="points-display">
-              <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 4 points
-            </span>
+
+          <li @click="toggleDetails('E')">
+            <div class="top">
+              <span class="option-text">E. Put the money in a savings account (paying 3% interest)</span>
+              <span class="points-display">
+                <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 4 points
+              </span>
+            </div>
+            <div v-if="detailsVisible.E" class="details-content">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Assets</th>
+                    <th>Liabilities</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>House £200,000</td>
+                    <td>Mortgage £150,000</td>
+                  </tr>
+                  <tr>
+                    <td>Car £50,000</td>
+                    <td>Car Loan £20,000</td>
+                  </tr>
+                  <tr>
+                    <td>Cash £45,000</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Total: £275,000</strong></td>
+                    <td><strong>Total: £170,000</strong></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2"><strong>Net Worth = £125,000</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </li>
         </ol>
       </div>
@@ -149,7 +377,7 @@
       </div>
 
       <!-- Next Button -->
-      <button class="next-question-button" @click="nextQuestion">Next</button>
+      <button class="next-button" @click="nextQuestion">Next</button>
     </div>
   </div>
 </template>
@@ -169,12 +397,23 @@ export default {
       showResults: false,
       timer: 480, // Timer starts at 8 minutes
       intervalId: null,
+      timerStarted: false,
+      showGlossary: false,
+      showHintModal: false,
       pointsMapping: {
         A: 7,
         B: 10,
         C: 8,
         D: 6,
         E: 4
+      },
+      // Track visibility of details for each option
+      detailsVisible: {
+        A: false,
+        B: false,
+        C: false,
+        D: false,
+        E: false
       }
     };
   },
@@ -190,6 +429,9 @@ export default {
     }
   },
   methods: {
+    toggleDetails(option) {
+      this.detailsVisible[option] = !this.detailsVisible[option]; // Toggle the visibility of the selected option's details
+    },
     submitAnswers() {
       this.showResults = true;
       clearInterval(this.intervalId); // Clear the timer after submission
@@ -203,17 +445,17 @@ export default {
       this.$emit('next-question'); // Emit event to parent to move to the next question
     },
     startTimer() {
-      this.intervalId = setInterval(() => {
-        if (this.timer > 0) {
-          this.timer--;
-        } else {
-          clearInterval(this.intervalId); // Stop the timer when time runs out
-        }
-      }, 1000);
+      if (!this.timerStarted) {
+        this.timerStarted = true;
+        this.intervalId = setInterval(() => {
+          if (this.timer > 0) {
+            this.timer--;
+          } else {
+            clearInterval(this.intervalId); // Stop the timer when time runs out
+          }
+        }, 1000);
+      }
     }
-  },
-  mounted() {
-    this.startTimer(); // Start the timer when the component is mounted
   },
   beforeUnmount() {
     clearInterval(this.intervalId); // Clear the timer when the component is destroyed
@@ -225,7 +467,6 @@ export default {
 /* Main Container Styling */
 .question-container {
   padding: 20px;
-  max-width: 700px;
   margin: 0 auto;
   font-family: Arial, sans-serif;
   background-color: #ffffff;
@@ -255,11 +496,35 @@ export default {
   border-radius: 5px;
 }
 
+/* Timer Styling */
+.timer-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .timer {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   color: black;
 }
+
+.start-timer-button {
+  font-size: 1rem;
+  padding: 1px;
+  background-color: transparent;
+  color: black;
+  border: none;
+  border-radius: 10px;
+  border-color: green;
+  border-width: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.start-timer-button:hover {
+  background-color: #45a04933;
+}
+
 
 /* Task Header */
 .task-header {
@@ -285,6 +550,136 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center
+}
+
+/* Glossary and Hint Buttons */
+
+/* Glossary Sidebar Styling */
+.glossary-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 350px;
+  height: 100%;
+  background-color: white;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+}
+
+.glossary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.glossary-header h2 {
+  font-size: 1.5rem;
+  color: #003F91;
+}
+
+.glossary-header .close-button {
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #003F91;
+}
+
+.glossary-content h3 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-top: 20px;
+}
+
+.glossary-content p {
+  font-size: 1rem;
+  color: #555;
+  margin-top: 5px;
+  line-height: 1.5;
+}
+
+.top-layer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 100%;
+}
+.button-container {
+  display: flex;
+  gap: 10px;
+}
+.glossary-button, .hint-button {
+  background-color: #f0f4ff;
+  border: 1px solid #e0e0e0;
+  color: #003F91;
+  font-weight: bold;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.glossary-button:hover, .hint-button:hover {
+  background-color: #dbe9ff;
+}
+
+.hint-button::after {
+  content: '?';
+  font-size: 1rem;
+  margin-left: 5px;
+}
+
+.hint-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.hint-modal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  width: 500px;
+  text-align: center;
+}
+
+.hint-modal h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #000;
+}
+
+.hint-modal p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.close-modal-button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.close-modal-button:hover {
+  background-color: #2563eb;
 }
 
 /* Assets and Liabilities Section */
@@ -399,7 +794,6 @@ export default {
   color: black;
   font-weight: bold;
   margin-bottom: 15px;
-  cursor: pointer;
   transition: background-color 0.3s ease;
   text-align: center;
 }
@@ -422,14 +816,16 @@ export default {
 
 .options-list-after li {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
   margin-bottom: 15px;
 }
-/* 
-.options-list-after li:hover {
-  background-color: #9bb6d9;
-} */
+
+.top {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
 
 .option-text {
   flex: 1;
@@ -443,9 +839,10 @@ export default {
   align-items: center;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  width: 85%;
 }
 
-.options-text:hover {
+.option-text:hover {
   background-color: #9bb6d9;
 }
 
@@ -461,6 +858,38 @@ export default {
 .points-display .lightning-bolt {
   width: 20px;
   margin-right: 5px;
+}
+
+/* Details content (table or additional information) */
+.details-content {
+  margin-top: 10px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.details-content table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  border: 1px solid #B3E3D3;
+}
+
+.details-content table th,
+.details-content table td {
+  padding: 5px;
+}
+
+.details-content table th {
+  background-color: #EFEFEF;
+  color: #333;
+  font-weight: bold;
+}
+
+.details-content table td {
+  border-bottom: 1px solid #ccc;
+  background-color: #FFFFFF;
+  color: #000;
 }
 
 /* Team Answer Section */
@@ -550,38 +979,22 @@ export default {
   font-weight: bold;
 }
 
-/* Submit Button */
-.submit-button {
-  display: block;
-  width: 100%;
-  background-color: #3b82f6;
+/* Submit and Next Button */
+.submit-button,
+.next-button {
+  width: 20%;
+  background-color: #003F91;
   color: white;
   border: none;
-  padding: 15px;
-  border-radius: 10px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-.submit-button:hover {
-  background-color: #2563eb;
-}
-
-/* Next Button */
-.next-question-button {
-  background-color: #1abc9c;
-  padding: 12px 24px;
+  padding: 10px;
+  border-radius: 30px;
   font-size: 1rem;
-  border-radius: 10px;
-  border: none;
-  color: #fff;
   cursor: pointer;
   margin-top: 20px;
 }
 
-.next-question-button:hover {
-  background-color: #16a085;
-  transform: scale(1.1);
+.submit-button:hover,
+.next-button:hover {
+  background-color: #2563eb;
 }
 </style>

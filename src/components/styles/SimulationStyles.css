@@ -22,9 +22,9 @@ table {
     border-collapse: collapse; /* Collapse borders */
   }
   
-  table, th, td {
-    border: 1px solid #ffd900ae; /* Yellow borders for table */
-  }
+  /* table, th, td {
+    border: 1px solid #ffd900ae; 
+  } */
   
   th {
     background-color: #000000; /* Black background for header */

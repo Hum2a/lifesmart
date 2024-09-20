@@ -3,7 +3,8 @@
     <!-- Landing Page Section -->
     <div v-if="!showTeamCreation" class="landing-page">
       <header class="header">
-        <h1 class="header-title">Welcome to The Financial Game!</h1>
+        <h1 class="header-title">Welcome to</h1>
+        <h1 class="header-title">The Financial Game!</h1>
       </header>
       <main class="main-content">
         <p class="welcome-message">
@@ -132,12 +133,15 @@ export default {
   padding: 20px;
   text-align: center;
   justify-content: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .header-title {
   font-size: 2rem;
   font-weight: bold;
-  color: #000000; /* Dark Blue */
+  color: #003F91; /* Dark Blue */
 }
 
 .main-content {
@@ -159,9 +163,10 @@ export default {
 .start-game-button {
   background-color: #1a237e;
   color: white;
-  padding: 15px 40px;
+  padding: 5px 20px;
+  font-size: 24px;
   border: none;
-  border-radius: 8px;
+  border-radius: 18px;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.3s;
 }

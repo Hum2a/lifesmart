@@ -6,6 +6,7 @@ import GroupCreation from '../components/screens/simulation/GroupCreation.vue';
 import SimulationPage from '../components/screens/simulation/Simulation.vue';
 import ResultsScreen from '../components/screens/simulation/ResultsScreen.vue';
 import QuizSimulation from '../components/screens/simulation/QuizSimulation.vue';
+import InvestmentCalculator from '@/components/screens/simulation/InvestmentCalculator.vue';
 
 const routes = [
   {
@@ -44,6 +45,11 @@ const routes = [
     path: '/simulation-results',
     name: 'SimResults',
     component: ResultsScreen,
+  },
+  {
+    path: '/investment-calculator',
+    name: 'InvestmentCalculator',
+    component: InvestmentCalculator,
   },
 ];
 

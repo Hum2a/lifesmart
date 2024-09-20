@@ -3,26 +3,45 @@
     <div class="calculator-content">
       <div class="calculator-inputs">
         <div class="input-group">
-          <label for="initialInvestment">Initial Investment:</label>
-          <input type="number" placeholder="£" id="initialInvestment" v-model="initialInvestment" class="calculator-input">
+          <label for="initialInvestment">Initial Investment (£):</label>
+          <input type="number" placeholder="0" id="initialInvestment" v-model="initialInvestment" class="calculator-input">
         </div>
         <div class="input-group">
-          <label for="monthlyContribution">Monthly Contribution:</label>
-          <input type="number" placeholder="£" id="monthlyContribution" v-model="monthlyContribution" class="calculator-input">
+          <label for="monthlyContribution">Monthly Contribution (£):</label>
+          <input type="number" placeholder="500" id="monthlyContribution" v-model="monthlyContribution" class="calculator-input">
         </div>
         <div class="input-group">
-          <label for="investmentPeriod">Investment Period (years):</label>
-          <input type="number" placeholder="£" id="investmentPeriod" v-model="investmentPeriod" class="calculator-input">
+          <label for="investmentPeriod">Investment Period (Years):</label>
+          <input type="number" placeholder="10" id="investmentPeriod" v-model="investmentPeriod" class="calculator-input">
+        </div>
+        <!-- New Input Fields for Interest Rates -->
+        <div class="input-group">
+          <label for="rate1">Interest Rate 1 (%):</label>
+          <input type="number" v-model="rates[0]" placeholder="3" class="calculator-input">
+        </div>
+        <div class="input-group">
+          <label for="rate2">Interest Rate 2 (%):</label>
+          <input type="number" v-model="rates[1]" placeholder="8" class="calculator-input">
+        </div>
+        <div class="input-group">
+          <label for="rate3">Interest Rate 3 (%):</label>
+          <input type="number" v-model="rates[2]" placeholder="12" class="calculator-input">
         </div>
         <button @click="calculate" class="calculate-button">Calculate</button>
       </div>
+
+      <!-- Chart Section -->
       <div class="calculator-chart">
         <canvas id="investmentChart" width="400" height="200"></canvas>
       </div>
     </div>
+
+    <!-- Results -->
     <div class="result" v-if="futureValues.length > 0">
-      <div v-for="(value, index) in futureValues" :key="'futureValue' + index">
-        <p class="future-value-display">Future Value (Rate {{ rates[index] }}%): <span class="future-value">£{{ value }}</span></p>
+      <h4>Future Values for Different Rates:</h4>
+      <div v-for="(value, index) in futureValues" :key="'futureValue' + index" class="result-box">
+        <p>At <strong>{{ rates[index] }}%</strong> return rate:</p>
+        <span class="future-value">£{{ formatNumber(value) }}</span> <!-- Using formatNumber method -->
       </div>
     </div>
   </div>
@@ -44,10 +63,13 @@ export default {
     };
   },
   mounted() {
-    // Automatically calculate and show the graph when the component mounts
-    this.calculate();
+    this.calculate(); // Automatically calculate on load
   },
   methods: {
+    formatNumber(value) {
+      // Converts the value to a string with commas as thousand separators
+      return parseFloat(value).toLocaleString('en-GB'); // 'en-GB' for UK style commas
+    },
     renderChart(datasets = []) {
       const ctx = document.getElementById('investmentChart').getContext('2d');
       if (this.chart) {
@@ -56,7 +78,7 @@ export default {
       this.chart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: Array.from({ length: 11 }, (_, i) => (i === 0 ? 'Start' : `${i}`)),
+          labels: Array.from({ length: this.investmentPeriod + 1 }, (_, i) => (i === 0 ? 'Start' : `Year ${i}`)),
           datasets: datasets
         },
         options: {
@@ -74,20 +96,37 @@ export default {
               }
             },
             legend: {
-              display: true
+              display: true,
+              labels: {
+                color: '#4CAF50',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
             }
           },
           scales: {
             x: {
               title: {
                 display: true,
-                text: 'Years'
+                text: 'Years',
+                color: '#333',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
               }
             },
             y: {
               title: {
                 display: true,
-                text: 'Value (£)'
+                text: 'Value (£)',
+                color: '#333',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
               }
             }
           }
@@ -114,16 +153,18 @@ export default {
         }
 
         datasets.push({
-          label: `Investment Growth at ${rate}%`,
+          label: `Growth at ${rate}%`,
           data: data,
           borderColor: this.getRandomColor(),
-          fill: false
+          fill: false,
+          tension: 0.4,
+          borderWidth: 2
         });
 
-        this.futureValues.push(currentValue.toFixed(2)); // Store future value for this rate
+        this.futureValues.push(currentValue.toFixed(2));
       });
 
-      this.renderChart(datasets); // Render the graph with all datasets
+      this.renderChart(datasets);
     },
     getRandomColor() {
       const letters = '0123456789ABCDEF';
@@ -138,58 +179,93 @@ export default {
 </script>
 
 <style scoped>
+/* Overall Container */
 .investment-calculator {
-  background-color: #ffffff;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #f9fafb;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+/* Input Fields and Labels */
 .calculator-inputs {
-  width: 50%;
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
 }
 
 .input-group {
-  margin-bottom: 15px;
+  flex: 1 1 30%;
+  color: black;
 }
 
 .calculator-input {
   width: 100%;
-  padding: 10px;
-  border-radius: 5px;
+  padding: 12px;
+  border: 2px solid #dcdcdc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
 }
 
+.calculator-input:focus {
+  border-color: #4caf50;
+}
+
+/* Calculate Button */
 .calculate-button {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background-color: #4caf50;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
+  font-size: 1.1rem;
   cursor: pointer;
-  margin-top: 10px;
+  transition: background-color 0.3s;
 }
 
+.calculate-button:hover {
+  background-color: #45a049;
+}
+
+/* Chart Container */
 .calculator-chart {
   width: 100%;
   height: 300px;
-  margin-top: 20px;
+  margin-top: 30px;
 }
 
+/* Result Display */
 .result {
-  margin-top: 20px;
+  margin-top: 30px;
+  width: 100%;
+  text-align: center;
 }
 
-.future-value-display {
+.result-box {
+  background-color: #f1f8e9;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
   font-size: 1.2rem;
   font-weight: bold;
 }
 
+.result-box p {
+  color: black;
+}
+
 .future-value {
+  font-size: 1.6rem;
   color: #4caf50;
-  font-size: 1.5rem;
 }
 </style>
