@@ -1,5 +1,9 @@
 <template>
   <div class="results-container">
+    <!-- Buttons to navigate home and to the simulation -->
+    <button @click="goHome" class="home-button">Go to Home</button>
+    <button @click="saveResultsAndNavigate" class="simulation-button">Go to Simulation</button>
+    
     <h2>Leaderboard</h2>
 
     <!-- Bar Chart Representation for Points -->
@@ -8,16 +12,14 @@
         v-for="(team, index) in rankedTeams"
         :key="team.name"
         :class="['team-bar-container', { expanded: expandedTeam === team.name, 'winning-team': team.rank === 1 }]"
-        :style="{ backgroundColor: team.rank === 1 ? '#C5FF9A' : '' , color: team.rank === 1 ? 'black' : '' }"
+        :style="{ backgroundColor: team.rank === 1 ? '#C5FF9A' : '', color: team.rank === 1 ? 'black' : '' }"
         @click="toggleTeamExpansion(team.name)"
       >
         <div class="team-bar">
           <p class="team-name">
             {{ team.rank }}. {{ team.name }}
-            <!-- Show crown image next to the team name for the winning team -->
             <img v-if="team.rank === 1" src="../../../assets/crown.png" alt="Crown" class="crown-icon" />
           </p>
-          <!-- Bar Wrapper to control the alignment -->
           <div class="bar-wrapper">
             <div class="bar" :style="{ width: barWidths[team.name] + '%', transitionDelay: index * 0.2 + 's' }"></div>
           </div>
@@ -63,9 +65,11 @@
       </div>
     </div>
 
+    <!-- Button container -->
     <div class="button-container">
       <button @click="goHome" class="home-button">Go to Home</button>
-      <button class="next-button" @click="nextQuestion">Next</button>
+      <!-- Next button will emit the next-question event, or navigate to the simulation if the quiz is complete -->
+      <button class="next-button" @click="nextOrNavigateToSimulation">Next</button>
       <button @click="saveResultsAndNavigate" class="simulation-button">Go to Simulation</button>
     </div>
   </div>
@@ -79,15 +83,19 @@ export default {
   props: {
     teams: {
       type: Array,
-      required: true
-    }
+      required: true,
+    },
+    quizComplete: {
+      type: Boolean,
+      required: true,
+    }, // A prop to check if the quiz is complete or not
   },
   data() {
     return {
       localTeams: [...this.teams], // Create a local copy of the teams array to avoid mutating props
       barWidths: {}, // Object to hold the final bar widths
       expandedTeam: null, // Track which team is expanded
-      maxPoints: 23 // The total number of points available in the quiz
+      maxPoints: 23, // The total number of points available in the quiz
     };
   },
   computed: {
@@ -112,7 +120,7 @@ export default {
       });
 
       return rankings;
-    }
+    },
   },
   methods: {
     calculateBarWidth(points) {
@@ -137,29 +145,35 @@ export default {
         await Promise.all(deletePromises);
 
         // Save new team's data from the current session
-        const savePromises = this.sortedTeams.map(team => {
+        const savePromises = this.sortedTeams.map((team) => {
           const teamDocRef = doc(teamsCollectionRef, team.name);
           return setDoc(teamDocRef, {
             name: team.name,
-            points: team.points
+            points: team.points,
           });
         });
 
         await Promise.all(savePromises); // Wait until all saving operations are done
 
-        // Navigate to the next screen
+        // Navigate to the simulation screen
         this.$router.push({ name: 'QuizSimulation' });
       } catch (error) {
         console.error('Error during saving results to Firebase:', error);
       }
     },
-    nextQuestion() {
-      this.$emit("next-question");
+    nextOrNavigateToSimulation() {
+      // If the quiz is complete, navigate directly to the simulation
+      if (this.quizComplete) {
+        this.saveResultsAndNavigate();
+      } else {
+        // Otherwise, emit the next-question event
+        this.$emit('next-question');
+      }
     },
   },
   mounted() {
     // Set the initial widths to 0 for animation
-    this.sortedTeams.forEach(team => {
+    this.sortedTeams.forEach((team) => {
       this.barWidths[team.name] = 0;
     });
 
@@ -171,12 +185,13 @@ export default {
         }, index * 300); // Add a small cascading delay between each team
       });
     }, 200); // Small delay before animation starts
-  }
+  },
 };
 </script>
 
 <style scoped>
 .results-container {
+  position: relative; /* Ensure the container is the reference for the absolute buttons */
   text-align: center;
   justify-content: center;
   padding: 30px;
@@ -259,7 +274,6 @@ export default {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for depth */
 }
 
-
 .points-info {
   display: flex;
   align-items: center;
@@ -324,8 +338,10 @@ tbody tr:hover {
   gap: 15px;
 }
 
-.home-button,
-.simulation-button {
+.home-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
   padding: 10px 20px;
   background-color: #1abc9c;
   color: white;
@@ -335,7 +351,23 @@ tbody tr:hover {
   transition: background-color 0.3s ease;
 }
 
-.home-button:hover,
+.home-button:hover {
+  background-color: #16a085;
+}
+
+.simulation-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  background-color: #1abc9c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
 .simulation-button:hover {
   background-color: #16a085;
 }
@@ -359,5 +391,4 @@ tbody tr:hover {
   margin-left: 8px; /* Add some space between the team name and the crown */
   vertical-align: middle; /* Align the crown vertically with the text */
 }
-
 </style>

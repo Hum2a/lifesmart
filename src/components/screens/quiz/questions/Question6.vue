@@ -61,8 +61,9 @@
           </div>
         </div>
         <p>
-          So now for the final round and the investment challenge to decide the ultimate winner. Ben has £100,000 in savings and wants to build a diversified portfolio of different asset classes. Each team will get a bonus £1,000 for each point they scored in the previous rounds.
+          So now for the final round and the investment challenge to decide the ultimate winner. Ben has £100,000 in savings and wants to build a diversified portfolio of different asset classes. 
         </p>
+        <p>Each team will get a bonus £200 for each point they scored in the previous rounds.</p>
       </div>
   
       <!-- Image -->
@@ -71,18 +72,21 @@
       <!-- Asset Allocation Section -->
       <div class="allocation-header">
         <p>Decide how to allocate the money between these 5 asset classes.</p>
-        <div class="amount-container">
-          <span class="amount">⚡ £1000</span>
-        </div>
+        <!-- <div class="amount-container">
+          <span class="amount">⚡ £200</span>
+        </div> -->
       </div>
   
       <!-- Asset Classes -->
       <div class="asset-classes-container">
-        <div class="asset-class" v-for="asset in assets" :key="asset.name">
-          <button class="asset-button">
+        <div class="asset-class" v-for="(asset, index) in assets" :key="asset.name">
+          <button class="asset-button" @click="toggleAsset(index)">
             <img :src="require(`../../../../assets/${asset.image}.png`)" :alt="asset.name" class="asset-icon" />
             <span>{{ asset.name }}</span>
           </button>
+          <div v-if="expandedAssets[index]" class="asset-definition">
+            <p>{{ asset.definition }}</p>
+          </div>
         </div>
       </div>
   
@@ -96,61 +100,89 @@
   
   <script>
   export default {
-    name: "QuestionNo6",
-    props: {
-      teams: {
-        type: Array,
-        required: true
-      }
+  name: "QuestionNo6",
+  props: {
+    teams: {
+      type: Array,
+      required: true,
     },
-    data() {
-      return {
-        timer: 600, // 10-minute timer
-        intervalId: null,
-        showGlossary: false,
-        showHintModal: false,
-        assets: [
-          { name: "Equities", icon: "📈", image: 'equities' },
-          { name: "Bonds", icon: "💵", image: 'bonds' },
-          { name: "Real Estate", icon: "🏠", image: 'real_estate' },
-          { name: "Commodities", icon: "⛏️", image: 'commodities' },
-          { name: "Alternative Investments", icon: "📊", image: 'other' }
-        ],
-      };
+  },
+  data() {
+    return {
+      timer: 600, // 10-minute timer
+      intervalId: null,
+      showGlossary: false,
+      showHintModal: false,
+      expandedAssets: Array(5).fill(false), // Array to track expanded state of assets
+      assets: [
+        {
+          name: "Equities",
+          icon: "📈",
+          image: "equities",
+          definition: "Equities are shares of ownership in a company. Investing in equities can offer high returns but comes with higher risk.",
+        },
+        {
+          name: "Bonds",
+          icon: "💵",
+          image: "bonds",
+          definition: "Bonds are loans to a company or government. They provide lower returns compared to stocks but are considered safer.",
+        },
+        {
+          name: "Real Estate",
+          icon: "🏠",
+          image: "real_estate",
+          definition: "Real estate involves investing in property. It can provide steady income through rent and long-term appreciation.",
+        },
+        {
+          name: "Commodities",
+          icon: "⛏️",
+          image: "commodities",
+          definition: "Commodities include raw materials like gold, oil, and agricultural products. These are often used as a hedge against inflation.",
+        },
+        {
+          name: "Alternative Investments",
+          icon: "📊",
+          image: "other",
+          definition: "Alternative investments include assets like hedge funds, private equity, and cryptocurrencies. They are less traditional but can offer diversification.",
+        },
+      ],
+    };
+  },
+  computed: {
+    minutes() {
+      return Math.floor(this.timer / 60);
     },
-    computed: {
-      minutes() {
-        return Math.floor(this.timer / 60);
-      },
-      seconds() {
-        return this.timer % 60;
-      },
-      progressBarWidth() {
-        return (this.timer / 600) * 100; // Calculate progress bar width based on time remaining
-      }
+    seconds() {
+      return this.timer % 60;
     },
-    methods: {
-      startTimer() {
-        this.intervalId = setInterval(() => {
-          if (this.timer > 0) {
-            this.timer--;
-          } else {
-            clearInterval(this.intervalId); // Stop the timer when time runs out
-          }
-        }, 1000);
-      },
-      nextQuestion() {
-        // Emit the event to proceed to the next question
-        this.$emit('next-question');
-      }
+    progressBarWidth() {
+      return (this.timer / 600) * 100;
     },
-    mounted() {
-      this.startTimer(); // Start the timer when the component is mounted
+  },
+  methods: {
+    startTimer() {
+      this.intervalId = setInterval(() => {
+        if (this.timer > 0) {
+          this.timer--;
+        } else {
+          clearInterval(this.intervalId); // Stop the timer when time runs out
+        }
+      }, 1000);
     },
-    beforeUnmount() {
-      clearInterval(this.intervalId); // Clear the timer when the component is destroyed
-    }
-  };
+    toggleAsset(index) {
+      this.expandedAssets[index] = !this.expandedAssets[index];
+    },
+    nextQuestion() {
+      this.$emit("next-question");
+    },
+  },
+  mounted() {
+    this.startTimer(); // Start the timer when the component is mounted
+  },
+  beforeUnmount() {
+    clearInterval(this.intervalId); // Clear the timer when the component is destroyed
+  },
+};
   </script>
   
   <style scoped>
@@ -256,6 +288,7 @@
     justify-content: center;
     flex-direction: column;
     background-color: #e6f0ff;
+    color: #000;
     padding: 30px 10px;
     font-size: 1.2rem;
     border: none;
@@ -265,31 +298,45 @@
     width: 100%;
   }
   
+  .asset-button:focus,
   .asset-button:hover {
-    background-color: #bcd9ff;
+    background-color: #dbe9ff;
   }
-  
+
+  .asset-definition {
+    background-color: #f0f4ff;
+    color: #000;
+    border: 1px solid #dbe9ff;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    transition: max-height 0.3s ease;
+  }
+    
   .asset-icon {
     width: 40px;
     height: 40px;
     margin-bottom: 10px;
   }
   
-  .submit-button {
-    width: 100%;
-    background-color: #003f91;
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    margin-top: 20px;
-  }
-  
-  .submit-button:hover {
-    background-color: #2563eb;
-  }
+/* Submit and Next Button */
+.submit-button,
+.next-button {
+  width: 20%;
+  background-color: #003F91;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 30px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.submit-button:hover,
+.next-button:hover {
+  background-color: #2563eb;
+}
   
   .glossary-sidebar {
     position: fixed;

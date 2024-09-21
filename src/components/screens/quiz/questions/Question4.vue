@@ -27,7 +27,7 @@
         </div>
       </div>
       <div class="task-header-question">
-        <p>Ben decides to use £500 a month of his savings and invest in a stocks fund portfolio. He chooses the ‘S&P500 Fund’ because it is predicted to return 8%.</p>
+        <p>Ben decides to use £500 a month of his savings and invest in a <span class="clickable-term" @click="showGlossary = true"><strong>stocks fund portfolio</strong></span>. He chooses the ‘<span class="clickable-term" @click="showGlossary = true"><strong>S&P500 Fund</strong></span>’ because it is predicted to return 8%.</p>
         <img src="../../../../assets/moneybars.png" alt="Task 4 Image" class="task-image">
       </div>
     </div>
@@ -39,7 +39,7 @@
         <button class="close-button" @click="showGlossary = false">X</button>
       </div>
       <div class="glossary-content">
-        <h3>Assets</h3>
+        <!-- <h3>Assets</h3>
         <p>Things you own that are worth money. For example, if you have a bicycle, some books, or a little money in a piggy bank, those are all your assets.</p>
         <h3>Liabilities</h3>
         <p>Money you owe to someone else. If you borrowed money from your friend to buy a new game and you have to give it back, that money is a liability.</p>
@@ -50,7 +50,7 @@
         <h3>Mortgage</h3>
         <p>A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.</p>
         <h3>Cryptocurrency</h3>
-        <p>A type of money you can use on a computer but can't touch like coins or bills. It’s made using special computer codes and you can use it to buy things online.</p>
+        <p>A type of money you can use on a computer but can't touch like coins or bills. It’s made using special computer codes and you can use it to buy things online.</p> -->
         <h3>Stocks Fund Portfolio</h3>
         <p>A basket of different companies that are all put together. When you buy a part of the basket, you own a small piece of all the companies in it. This helps spread the risk because if one company doesn't do well, others in the basket might still grow!</p>
         <h3>S&P 500</h3>
@@ -61,8 +61,8 @@
         <p>This is when you get interest on both the money you saved and the extra money (interest) you earned before. It's like your money making more money because the interest starts earning interest too!</p>
         <h3>Annual Return</h3>
         <p>This is how much money you make or lose from an investment in a year. It tells you how good or bad the investment did.</p>
-        <h3>Credit Rating</h3>
-        <p>A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.</p>
+        <!-- <h3>Credit Rating</h3>
+        <p>A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.</p> -->
       </div>
     </div>
 
@@ -77,7 +77,7 @@
 
     <!-- Question and Points Section -->
     <div class="question-section">
-      <p class="question-text">If he continues to put in £500 a month and the fund has a return of 8% annually, approximately how much money will he have after 10 years?</p>
+      <p class="question-text">If he continues to put in £500 a month and the fund has a return of 8% <span class="clickable-term" @click="showGlossary = true"><strong>annually</strong></span>, approximately how much money will he have after 10 years?</p>
       <div class="points-section">
           <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
           <p class="points">2 points</p>
@@ -317,10 +317,8 @@ export default {
   padding: 1px;
   background-color: transparent;
   color: black;
-  border: none;
+  border: 2px solid #45a04933; /* Define the border with width, style, and color */
   border-radius: 10px;
-  border-color: green;
-  border-width: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
 }
@@ -621,5 +619,15 @@ export default {
 .ic-link {
   color: #003F91CC;
   background-color: transparent;
+}
+
+.clickable-term {
+  color: #3b82f6;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.clickable-term:hover {
+  color: #2563eb;
 }
 </style>

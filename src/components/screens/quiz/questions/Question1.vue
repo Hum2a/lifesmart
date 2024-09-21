@@ -26,7 +26,12 @@
           <button class="hint-button" @click="showHintModal = true">Hint?</button>
         </div>
       </div>
-      <p>Ben is a 30 year old engineer. He has the following assets and liabilities:</p>
+      <p>
+        Ben is a 30 year old engineer. He has the following
+        <span class="clickable-term" @click="showGlossary = true"><strong>assets</strong></span>
+        and
+        <span class="clickable-term" @click="showGlossary = true"><strong>liabilities</strong></span>.
+      </p>
     </div>
 
     <!-- Glossary Sidebar -->
@@ -40,7 +45,7 @@
         <p>Things you own that are worth money. For example, if you have a bicycle, some books, or a little money in a piggy bank, those are all your assets.</p>
         <h3>Liabilities</h3>
         <p>Money you owe to someone else. If you borrowed money from your friend to buy a new game and you have to give it back, that money is a liability.</p>
-        <h3>Income Tax</h3>
+        <!-- <h3>Income Tax</h3>
         <p>A portion of the money that people earn from their jobs or other places, which they need to give to the government. This money helps pay for things like schools, roads, and hospitals.</p>
         <h3>Tax Rates</h3>
         <p>This tells you how much income tax you need to pay. It’s like a rule that says how much money you give to the government based on how much money you make.</p>
@@ -59,7 +64,7 @@
         <h3>Annual Return</h3>
         <p>This is how much money you make or lose from an investment in a year. It tells you how good or bad the investment did.</p>
         <h3>Credit Rating</h3>
-        <p>A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.</p>
+        <p>A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.</p> -->
       </div>
     </div>
 
@@ -299,10 +304,8 @@ export default {
   padding: 1px;
   background-color: transparent;
   color: black;
-  border: none;
+  border: 2px solid #45a04933; /* Define the border with width, style, and color */
   border-radius: 10px;
-  border-color: green;
-  border-width: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
 }
@@ -339,6 +342,16 @@ export default {
   margin-top: 5px;
 }
 
+.clickable-term {
+  color: #3b82f6;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.clickable-term:hover {
+  color: #2563eb;
+}
+
 .button-container {
   display: flex;
   gap: 10px;
@@ -362,7 +375,6 @@ export default {
 }
 
 .hint-button::after {
-  content: '?';
   font-size: 1rem;
   margin-left: 5px;
 }

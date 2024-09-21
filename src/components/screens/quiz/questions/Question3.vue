@@ -40,19 +40,19 @@
         <button class="close-button" @click="showGlossary = false">X</button>
       </div>
       <div class="glossary-content">
-        <h3>Assets</h3>
+        <!-- <h3>Assets</h3>
         <p>Things you own that are worth money. For example, if you have a bicycle, some books, or a little money in a piggy bank, those are all your assets.</p>
         <h3>Liabilities</h3>
         <p>Money you owe to someone else. If you borrowed money from your friend to buy a new game and you have to give it back, that money is a liability.</p>
         <h3>Income Tax</h3>
         <p>A portion of the money that people earn from their jobs or other places, which they need to give to the government. This money helps pay for things like schools, roads, and hospitals.</p>
         <h3>Tax Rates</h3>
-        <p>This tells you how much income tax you need to pay. It’s like a rule that says how much money you give to the government based on how much money you make.</p>
+        <p>This tells you how much income tax you need to pay. It’s like a rule that says how much money you give to the government based on how much money you make.</p> -->
         <h3>Mortgage</h3>
         <p>A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.</p>
         <h3>Cryptocurrency</h3>
         <p>A type of money you can use on a computer but can't touch like coins or bills. It’s made using special computer codes and you can use it to buy things online.</p>
-        <h3>Stocks Fund Portfolio</h3>
+        <!-- <h3>Stocks Fund Portfolio</h3>
         <p>A basket of different companies that are all put together. When you buy a part of the basket, you own a small piece of all the companies in it. This helps spread the risk because if one company doesn't do well, others in the basket might still grow!</p>
         <h3>S&P 500</h3>
         <p>A list of the 500 biggest and most important companies in America. If you invest in the S&P 500, you’re buying a little piece of each of those 500 companies. </p>
@@ -63,7 +63,7 @@
         <h3>Annual Return</h3>
         <p>This is how much money you make or lose from an investment in a year. It tells you how good or bad the investment did.</p>
         <h3>Credit Rating</h3>
-        <p>A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.</p>
+        <p>A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.</p> -->
       </div>
     </div>
 
@@ -100,7 +100,7 @@
           <h4>Liabilities</h4>
           <ul>
             <li>
-              <span class="asset-icon">🏠 Mortgage (6%)</span>
+              <span class="asset-icon">🏠 <span class="clickable-term" @click="showGlossary = true"><strong>Mortgage</strong></span> (6%)</span>
               <span class="asset-value">£150,000</span>
             </li>
             <li>
@@ -126,10 +126,10 @@
       <!-- Options List Before Submission -->
       <div class="options-list-before">
         <ol>
-          <li>A. Pay off some of his mortgage (house loan)</li>
+          <li>A. Pay off some of his <span class="clickable-term" @click="showGlossary = true"><strong>Mortgage</strong></span> (house loan)</li>
           <li>B. Pay off his car loan</li>
           <li>C. Spend the money on a training and self-development course</li>
-          <li>D. Invest in a new cryptocurrency coin his friend has just bought (Skibidicoin)</li>
+          <li>D. Invest in a new <span class="clickable-term" @click="showGlossary = true"><strong>cryptocurrency</strong></span> coin his friend has just bought (Skibidicoin)</li>
           <li>E. Put the money in a savings account (paying 3% interest)</li>
         </ol>
       </div>
@@ -166,7 +166,7 @@
         <ol>
           <li @click="toggleDetails('A')">
             <div class="top">
-              <span class="option-text">A. Pay off some of his mortgage (house loan)</span>
+              <span class="option-text">A. Pay off some of his <span class="clickable-term" @click="showGlossary = true"><strong>Mortgage</strong></span> (house loan)</span>
               <span class="points-display">
                 <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 7 points
               </span>
@@ -182,7 +182,7 @@
                 <tbody>
                   <tr>
                     <td>House £200,000</td>
-                    <td>Mortgage £150,000</td>
+                    <td><span class="clickable-term" @click="showGlossary = true"><strong>Mortgage</strong></span> £150,000</td>
                   </tr>
                   <tr>
                     <td>Car £50,000</td>
@@ -222,7 +222,7 @@
                 <tbody>
                   <tr>
                     <td>House £200,000</td>
-                    <td>Mortgage £150,000</td>
+                    <td><span class="clickable-term" @click="showGlossary = true"><strong>Mortgage</strong></span> £150,000</td>
                   </tr>
                   <tr>
                     <td>Car £50,000</td>
@@ -262,7 +262,7 @@
                 <tbody>
                   <tr>
                     <td>House £200,000</td>
-                    <td>Mortgage £150,000</td>
+                    <td><span class="clickable-term" @click="showGlossary = true"><strong>Mortgage</strong></span> £150,000</td>
                   </tr>
                   <tr>
                     <td>Car £50,000</td>
@@ -286,7 +286,7 @@
 
           <li @click="toggleDetails('D')">
             <div class="top">
-              <span class="option-text">D. Invest in a new cryptocurrency coin his friend has just bought (Skibidicoin)</span>
+              <span class="option-text">D. Invest in a new <span class="clickable-term" @click="showGlossary = true"><strong>cryptocurrency</strong></span> coin his friend has just bought (Skibidicoin)</span>
               <span class="points-display">
                 <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 6 points
               </span>
@@ -302,7 +302,7 @@
                 <tbody>
                   <tr>
                     <td>House £200,000</td>
-                    <td>Mortgage £150,000</td>
+                    <td><span class="clickable-term" @click="showGlossary = true"><strong>Mortgage</strong></span> £150,000</td>
                   </tr>
                   <tr>
                     <td>Car £50,000</td>
@@ -342,7 +342,7 @@
                 <tbody>
                   <tr>
                     <td>House £200,000</td>
-                    <td>Mortgage £150,000</td>
+                    <td><span class="clickable-term" @click="showGlossary = true"><strong>Mortgage</strong></span> £150,000</td>
                   </tr>
                   <tr>
                     <td>Car £50,000</td>
@@ -370,7 +370,7 @@
       <div class="team-answer-comparison">
         <div v-for="(team, index) in teams" :key="team.name" class="team-answer-box">
           <p>{{ team.name }}</p>
-          <div class="points-earned">
+          <div class="points-earned" :style="{ backgroundColor: getPointsColor(getPoints(teamAnswers[index])) }">
             {{ getPoints(teamAnswers[index]) }} points
           </div>
         </div>
@@ -438,6 +438,20 @@ export default {
     },
     getPoints(answer) {
       return this.pointsMapping[answer] || 0;
+    },
+    getPointsColor(points) {
+      const minPoints = 0;
+      const maxPoints = 10;
+      const coldColor = [0, 0, 255]; // Cold: Blue (RGB)
+      const warmColor = [0, 255, 0];   // Warm: Green (RGB)
+
+      const ratio = (points - minPoints) / (maxPoints - minPoints);
+
+      const r = Math.round(coldColor[0] + ratio * (warmColor[0] - coldColor[0]));
+      const g = Math.round(coldColor[1] + ratio * (warmColor[1] - coldColor[1]));
+      const b = Math.round(coldColor[2] + ratio * (warmColor[2] - coldColor[2]));
+
+      return `rgb(${r}, ${g}, ${b})`;
     },
     nextQuestion() {
       const pointsArray = this.teamAnswers.map(answer => this.getPoints(answer));
@@ -513,10 +527,8 @@ export default {
   padding: 1px;
   background-color: transparent;
   color: black;
-  border: none;
+  border: 2px solid #45a04933; /* Define the border with width, style, and color */
   border-radius: 10px;
-  border-color: green;
-  border-width: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
 }
@@ -996,5 +1008,11 @@ export default {
 .submit-button:hover,
 .next-button:hover {
   background-color: #2563eb;
+}
+
+.clickable-term {
+  color: #3b82f6;
+  cursor: pointer;
+  text-decoration: underline;
 }
 </style>

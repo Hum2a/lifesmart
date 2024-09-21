@@ -3,7 +3,7 @@
     <main class="main-content">
       <!-- Show the results screen between questions -->
       <ResultsScreen
-        v-if="showResults"
+        v-if="showResults && !quizComplete"
         :teams="sortedTeams"
         @next-question="nextQuestion"
       ></ResultsScreen>
@@ -19,7 +19,13 @@
       ></component>
 
       <!-- Render the final results screen if quiz is complete -->
-      <ResultsScreen v-else-if="quizComplete" :teams="teams" @go-home="goHome" @save-results="saveResultsAndNavigate" />
+      <ResultsScreen
+        v-else-if="quizComplete"
+        :teams="teams"
+        :quiz-complete="quizComplete"
+        @go-home="goHome"
+        @save-results="saveResultsAndNavigate"
+      />
     </main>
 
     <!-- Footer -->
@@ -104,7 +110,8 @@ export default {
       if (currentQuestionIndex.value < totalQuestions - 1) {
         currentQuestionIndex.value += 1;
       } else {
-        quizComplete.value = true;
+        quizComplete.value = true; // Mark quiz as complete
+        saveResultsAndNavigate(); // Automatically navigate to the simulation after the final question
       }
     };
 
@@ -137,7 +144,7 @@ export default {
 
         console.log('New results saved to Firebase:', sortedTeams.value);
 
-        // Step 3: Navigate to the next screen only after all operations are complete
+        // Step 3: Navigate to the simulation screen only after all operations are complete
         router.push({ name: 'QuizSimulation' });
 
       } catch (error) {
