@@ -25,6 +25,8 @@
         <span>Group Management</span>
       </h1>
 
+      <button @click="fetchAvailableGroups" class="modern-button">Restore Group</button>
+
       <div class="groups">
         <div v-for="(group, index) in groups" :key="index" class="group">
           <div class="group-header">
@@ -52,7 +54,7 @@
                 >
               </div>
               <div class="total-value">
-                Total Spendable Amount: £{{ getRemainingSpendableAmount(group).toFixed(2) }}
+                Total: £{{ getRemainingSpendableAmount(group).toFixed(2) }}
               </div>
               <button @click="updateAllGroupValues(index)" class="modern-button enter-all-btn">Enter All</button>
             </div>
@@ -80,6 +82,20 @@
       </div>
     </div>
   </div>
+  <!-- Restore Group Modal -->
+  <div class="modal" v-if="showRestoreModal">
+    <div class="modal-content">
+      <span class="close" @click="toggleRestoreModal">&times;</span>
+      <h3>Select a Group to Restore</h3>
+      <ul class="group-list">
+        <li v-for="group in availableGroups" :key="group.name" class="group-list-item">
+          <span>{{ group.name }} ({{ group.points }} points)</span>
+          <button @click="restoreGroup(group.name)" class="restore-button">Restore</button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
 </template>
 
 <script>
@@ -106,6 +122,8 @@ export default {
   data() {
     return {
       groups: [],
+      availableGroups: [], // Holds groups fetched for restoration
+      showRestoreModal: false, // Controls the restore modal visibility
       showCalculator: false,
       showSimulationControls: false,
       showSimulationHistory: false,
@@ -153,6 +171,104 @@ export default {
       } catch (error) {
         console.error('Error fetching team data from Firebase:', error);
         this.isLoading = false;
+      }
+    },
+    // async restoreGroup(groupName) {
+    //   const db = getFirestore();
+    //   const teamsCollectionRef = collection(db, 'Quiz', 'Quiz Simulations', 'Teams');
+      
+    //   try {
+    //     // Query Firestore for the specific group by name
+    //     const querySnapshot = await getDocs(teamsCollectionRef);
+    //     const teamDoc = querySnapshot.docs.find(doc => doc.data().name === groupName);
+
+    //     if (teamDoc) {
+    //       const points = teamDoc.data().points;
+    //       this.groups.push({
+    //         name: groupName,
+    //         points: points,
+    //         assets: {
+    //           equity: 0,
+    //           bonds: 0,
+    //           realestate: 0,
+    //           commodities: 0,
+    //           other: 0,
+    //         },
+    //         allocatedFunds: this.getTotalSpendableAmount(points)
+    //       });
+    //       this.$nextTick(() => this.renderPieChart(this.groups.length - 1)); // Render pie chart for the restored group
+    //       alert(`Group "${groupName}" has been restored with ${points} points.`);
+    //     } else {
+    //       alert(`Group "${groupName}" could not be found in Firestore.`);
+    //     }
+    //   } catch (error) {
+    //     console.error('Error restoring group from Firestore:', error);
+    //     alert('Failed to restore group. Please try again.');
+    //   }
+    // },
+    restoreGroupPrompt() {
+      const groupName = prompt("Enter the name of the group you wish to restore:");
+      if (groupName && groupName.trim() !== '') {
+        this.restoreGroup(groupName.trim());
+      }
+    },
+    async fetchAvailableGroups() {
+      const db = getFirestore();
+      const teamsCollectionRef = collection(db, 'Quiz', 'Quiz Simulations', 'Teams');
+      
+      try {
+        const querySnapshot = await getDocs(teamsCollectionRef);
+        if (querySnapshot.empty) {
+          alert('No groups available to restore.');
+          return;
+        }
+
+        this.availableGroups = querySnapshot.docs.map(doc => ({
+          name: doc.data().name,
+          points: doc.data().points,
+        }));
+        
+        this.toggleRestoreModal(); // Show the modal after fetching groups
+      } catch (error) {
+        console.error('Error fetching available groups from Firestore:', error);
+        alert('Failed to fetch available groups.');
+      }
+    },
+    toggleRestoreModal() {
+      this.showRestoreModal = !this.showRestoreModal;
+    },
+    async restoreGroup(groupName) {
+      this.showRestoreModal = false; // Close the modal when a group is selected
+
+      const db = getFirestore();
+      const teamsCollectionRef = collection(db, 'Quiz', 'Quiz Simulations', 'Teams');
+      
+      try {
+        const querySnapshot = await getDocs(teamsCollectionRef);
+        const teamDoc = querySnapshot.docs.find(doc => doc.data().name === groupName);
+
+        if (teamDoc) {
+          const points = teamDoc.data().points;
+          this.groups.push({
+            name: groupName,
+            points: points,
+            assets: {
+              equity: 0,
+              bonds: 0,
+              realestate: 0,
+              commodities: 0,
+              other: 0,
+            },
+            allocatedFunds: this.getTotalSpendableAmount(points)
+          });
+          this.$nextTick(() => this.renderPieChart(this.groups.length - 1)); // Render pie chart for the restored group
+          alert(`Group "${groupName}" has been restored with ${points} points.`);
+        } else {
+          alert(`Group "${groupName}" could not be found in Firestore.`);
+        }
+      } catch (error) {
+        console.error('Error restoring group from Firestore:', error);
+        alert('Failed to restore group. Please try again.');
       }
     },
     getTotalSpendableAmount(points) {
@@ -381,6 +497,7 @@ export default {
 <style scoped>
 body {
   margin: auto;
+  font-size: 1.1em; /* Global font size increase */
 }
 
 .dashboard {
@@ -388,233 +505,164 @@ body {
   background-color: #f6f2ee;
 }
 
-.header-content {
+.header {
+  grid-column: 1 / -1;
   display: flex;
-  align-items: center; /* Centers the image and text vertically */
-  justify-items: center;
-  text-align: left;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  color: #000000; /* Sets the text color to black */
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.2em;
+  background-color: #102454;
+  border-radius: 0 0 25px 25px;
+  position: relative;
 }
 
-.header-icons {
+.header .logo {
+  height: auto;
+  width: auto;
+  margin-left: 0;
+  clip-path: polygon(0 0, 60% 0, 60% 100%, 0% 100%);
+}
+
+.header .header-icons {
   display: inline-flex;
-  justify-items: center;
-  align-self: center;
   align-items: center;
   justify-content: flex-end;
-  width: auto;
 }
 
-.blueline {
-  height: 50px; /* Adjust the height as needed */
+.header-icons button {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #b6b6b6;
+  transition: transform 0.3s ease;
+}
+
+.header-icons button:hover i {
+  transform: scale(1.2);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  margin: 20px 0;
+  color: #000000;
 }
 
 .header-content span {
-  font-size: 24px; /* Adjust the font size as needed */
-  font-weight: bold; /* Optional: if you want the text to be bold */
+  font-size: 26px;
+  font-weight: bold;
 }
 
+.header-content .blueline {
+  height: 50px;
+}
 
 .groups {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center; /* Align items to the start */
-  align-items: center; /* Align items at their top edge */
+  justify-content: center;
+  align-items: center;
   gap: 20px;
 }
 
 .group {
-  margin-right: 20px;
-  margin-bottom: 20px;
-  background-color: #FBFBFB; /* Navy blue background */
+  background-color: #FBFBFB;
   padding: 20px;
   border-radius: 10px;
-  width: 300px;; 
+  width: 300px;
+  margin: 0 20px 20px 0;
 }
 
 .group-header {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Ensures that content is evenly spaced */
-  white-space: nowrap; /* Prevents text from wrapping to the next line */
+  justify-content: space-between;
+  white-space: nowrap;
 }
 
 .group-header h2 {
   display: flex;
-  align-items: center; /* Vertically center elements */
-  flex-wrap: nowrap; /* Prevents the content from wrapping to the next line */
-  white-space: nowrap; /* Prevent text wrapping */
-  overflow: hidden; /* Hides any overflowing content */
-  text-overflow: ellipsis; /* Adds '...' if the content overflows */
-  margin: 0; /* Removes default margin to avoid extra spacing */
-  font-size: 1.2rem; /* Adjust font size as necessary */
+  align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  font-size: 1.8rem;
 }
 
 .group-header h2 .group-points {
   margin-left: 10px;
-  font-size: 0.9rem; /* Adjust font size as needed */
-  color: #888;
+  font-size: 1rem;
+  color: #cb1111;
 }
 
-.group-points {
-  font-size: 0.9rem;
-  color: #888;
-  margin-left: 10px;
-}
-
-.group-content {
+.group .group-content {
   display: flex;
   flex-direction: column;
 }
 
-.group-header .edit-group-btn,
-.group-header .remove-group-btn {
-  margin-left: 10px; /* Adjusts spacing between buttons */
-}
-
-.inputs {
+.group .inputs {
   display: flex;
   flex-direction: column;
 }
 
-.input-row {
+.group .inputs .input-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
 }
 
-.input-row label {
-  margin-right: 10px; /* Add some spacing between label and input */
-  color: #000000
+.group .inputs .input-row label {
+  margin-right: 10px;
+  color: #000000;
+  font-size: 1.5em
 }
 
-.input-row input {
+.group .inputs .input-row input {
   color: #000000;
   text-align: center;
 }
 
-.add-group-btn {
-  background-color: #082148; /* Purple background */
-  color: #ffffff; /* White text color */
-  padding: 10px 20px;
-  border: none;
+.total-value {
+  margin: 20px 0;
+  padding: 10px;
+  background-color: #082148;
+  color: #ffffff;
   border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s ease-out, box-shadow 0.2s ease;
-  height: 500px; /* Adjust height to fit its content */
-  align-self: center;
-  margin: auto 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-
-  /* Styles for vertical text */
-  writing-mode: vertical-lr;
-  text-orientation: mixed;
-  transform: rotate(180deg);
+  text-align: center;
+  font-size: 26px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.add-group-btn:hover, .add-group-btn:focus {
-  background-color: #00035f;
-  transform: rotate(180deg) scale(1.05);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Larger shadow for lifted effect */
+.pie-chart-container {
+  width: 300px;
+  height: 200px;
+  margin: 10px auto 0;
 }
 
-.add-group-btn:active {
-  transform: rotate(180deg) scale(0.95); 
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Reset to smaller shadow */
-}
-
-
-.edit-group-btn img, .remove-group-btn img {
-  width: 20px; /* Adjust the width as needed */
-  height: auto; /* Maintain aspect ratio */
-  display: block; /* To enable margin auto */
-  margin: 0 auto; /* Center the image horizontally */
-}
-
-.edit-group-btn, .remove-group-btn {
-  padding: 5px; /* Adjust padding to ensure buttons are not too large or too small */
-  border: none; /* Remove any default border */
-  background: transparent; /* Remove any default background */
-  cursor: pointer; /* Change cursor to pointer to indicate clickable */
-}
-
-.edit-group-btn {
-  margin-left: 130px;
-}
-
-.modern-input {
-  background-color: #F0F0F0; /* Black background */
-  color: #000000; /* White text */
-  font-size: 16px;
-  transition: border-color 0.3s;
-}
-
-.modern-input:focus {
-  outline: none;
-}
-
-
-.modern-button {
-  background-color: #082148; /* Yellow background */
+.button, .modern-button {
+  background-color: #082148;
   color: #ffffff;
   border: none;
-  font-size: 16px;
+  padding: 10px 20px;
+  font-size: 2rem;
+  border-radius: 5px;
   cursor: pointer;
-  margin-bottom: 10px;
   transition: background-color 0.3s, transform 0.2s;
 }
 
-.modern-button:hover {
-  background-color: #0a015a; /* Slightly darker red on hover */
-  transform: scale(1.05); /* Slightly larger on hover */
+.button:hover, .modern-button:hover {
+  background-color: #0a015a;
+  transform: scale(1.05);
 }
 
-.modern-button:focus {
-  outline: none;
-}
-
-.modern-button:active {
-  background-color: #cc0000; /* Even darker red on active/click */
-  transform: scale(0.95); /* Slightly smaller on click */
-}
-
-.calculator-toggle, .simulation-controls-toggle, .simulation-history-toggle, .simulation-login-toggle {
-  position: absolute;
-  right: 20px;
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #b6b6b6; /* Yellow color */
-}
-
-.simulation-controls-toggle {
-  right: 80px; /* Adjust based on your layout */
-}
-
-.simulation-history-toggle {
-  right: 140px; /* Adjust based on your layout */
-}
-
-.simulation-login-toggle {
-  right: 200px;
-}
-
-.simulation-login-toggle img {
-  width: 40px;  /* Adjust the width as needed */
-  height: 40px; /* Maintain the aspect ratio */
-}
-
-
-.calculator-toggle i, .simulation-controls-toggle i, .simulation-history-toggle i, .simulation-login-toggle i {
-  transition: transform 0.3s ease;
-  }
-
-.calculator-toggle:hover i, .simulation-controls-toggle:hover i, .simulation-history-toggle:hover i, .simulation-login-toggle:hover i {
-transform: scale(1.2);
+.button:active, .modern-button:active {
+  transform: scale(0.95);
+  background-color: #cc0000;
 }
 
 .modal {
@@ -623,21 +671,24 @@ transform: scale(1.2);
   align-items: center;
   position: fixed;
   z-index: 1000;
-  left: 0;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
   background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
   background-color: #fefefe;
-  margin: auto;
   padding: 20px;
   border: 1px solid #888;
   width: 80%;
   max-width: 500px;
+  margin: auto;
+}
+
+.modal-content h3 {
+  font-size: 1.1em;
 }
 
 .modal-content input {
@@ -646,13 +697,13 @@ transform: scale(1.2);
   margin: 10px 0;
   border: 1px solid #ccc;
   border-radius: 4px;
-  box-sizing: border-box; /* Makes sure padding does not affect overall width */
+  box-sizing: border-box;
 }
 
 .modal-content button {
   width: 100%;
-  background-color: #001f3f; /* Navy blue background */
-  color: yellow; /* Yellow text */
+  background-color: #001f3f;
+  color: yellow;
   padding: 14px 20px;
   margin: 10px 0;
   border: none;
@@ -662,9 +713,8 @@ transform: scale(1.2);
 }
 
 .modal-content button:hover {
-  background-color: #000080; /* A slightly lighter navy blue for hover */
+  background-color: #000080;
 }
-
 
 .close {
   color: #aaaaaa;
@@ -673,135 +723,42 @@ transform: scale(1.2);
   font-weight: bold;
 }
 
-.close:hover,
-.close:focus {
+.close:hover, .close:focus {
   color: #000;
   text-decoration: none;
   cursor: pointer;
 }
 
-.header {
-  grid-column: 1 / -1; /* Full width */
+.group-list {
+  list-style: none;
+  padding: 0;
+}
+
+.group-list-item {
   display: flex;
   justify-content: space-between;
-  align-items: center; /* Vertically center the content */
-  padding: 0.2em;
-  background-color: #102454;
-  border-top-left-radius: 0;      /* Top left corner */
-  border-top-right-radius: 0;     /* Top right corner */
-  border-bottom-right-radius: 25px;  /* Bottom right corner */
-  border-bottom-left-radius: 25px;   /* Bottom left corner */
-  position: relative;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
 }
 
-.header p {
-  color: white; /* Choose a color that fits your header's theme */
-  position: absolute;
-  color: white;
-  top: 50%; /* Aligns the top of the element at the center of the parent */
-  left: 50%; /* Aligns the left of the element at the center of the parent */
-  transform: translate(-50%, -50%); 
+.group-list-item:last-child {
+  border-bottom: none;
 }
 
-.toolbar {
-  display: flex;
-  gap: 20px; /* Space between buttons */
-}
-
-button {
-  background-color: #0073e6; /* Lighter blue for buttons */
-  color: #ffffff; /* White text */
-  border: none;
-  padding: 10px 15px;
-  border-radius: 5px; /* Rounded corners for a modern look */
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s; /* Smooth transitions for hover and click */
-}
-
-button:hover {
-  background-color: #005cb800; /* Darker blue on hover */
-  transform: scale(1.05); /* Slightly larger on hover */
-}
-
-button:active {
-  transform: scale(0.95); /* Slightly smaller when clicked */
-}
-
-
-.logo {
-  height: auto; /* Maintain aspect ratio */
-  width: auto; /* Example width; adjust as needed */
-  display: block; /* To prevent inline default behavior */
-  margin-left: 0; /* Align the logo to the left */
-  clip-path: polygon(0 0, 60% 0, 60% 100%, 0% 100%);
-
-}
-
-/* Font Awesome Icons */
-.fas {
-  margin-right: 8px; /* Space between icon and text */
-}
-
-.total-value {
-  margin-top: 20px; /* Adds space above the total value display */
-  margin-bottom: 20px;
-  padding: 10px; /* Adds padding around the text for better readability */
-  border-radius: 5px; /* Rounded corners for the total value display */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow for depth */
-  text-align: center; /* Centers the total value text */
-  background-color: #082148; /* Yellow background */
+.restore-button {
+  background-color: #082148;
   color: #ffffff;
+  padding: 8px 12px;
   border: none;
-  font-size: 16px;
-  margin-bottom: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.pie-chart-container {
-  width: 300px; /* Adjust based on desired size and number of charts per row */
-  height: 200px; /* Keep the same height as width for a 1:1 aspect ratio */
-  margin: auto; /* Center the canvas in the pie chart container if needed */
-  margin-top: 10px;
+.restore-button:hover {
+  background-color: #0a015a;
 }
 
-.welcome-message {
-  padding: 10px 20px;
-  background-color: #f0f4f844; /* Light grey-blue, soothing and professional */
-  color: #2c3e50; /* Dark blue for contrast and readability */
-  border-left: 5px solid #5cb85c; /* A green accent color */
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow for depth */
-  margin-bottom: 20px; /* Space it out from other content */
-  display: inline-block; /* Aligns better with other inline or block elements */
-}
 
-.settings {
-  background-color: #f2f2f2; /* Light grey background */
-  padding: 15px;            /* Padding around the content */
-  margin: 20px 0;           /* Vertical spacing for separation */
-  border-radius: 8px;       /* Rounded corners */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
-  display: flex;            /* Flexible box layout */
-  align-items: center;      /* Vertically align items in the middle */
-  justify-content: space-between; /* Space between label and input field */
-}
-
-.settings label {
-  font-weight: bold;        /* Bold font for label */
-  margin-right: 10px;       /* Space between label and input */
-  color: #333;              /* Darker text color for better readability */
-}
-
-.settings input[type="number"] {
-  width: 100px;             /* Fixed width for the input field */
-  padding: 8px;             /* Padding inside the input field */
-  border: 1px solid #ccc;   /* Light grey border */
-  border-radius: 4px;       /* Rounded corners for the input field */
-  font-size: 16px;          /* Sufficiently large font size for easy reading */
-}
-
-.enter-all-btn {
-  margin-top: 10px;
-}
 </style>
