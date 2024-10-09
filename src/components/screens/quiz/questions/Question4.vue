@@ -22,47 +22,26 @@
       <div class="top-layer">
         <h3>Task 4</h3>
         <div class="button-container">
-          <button class="glossary-button" @click="showGlossary = true">Glossary</button>
           <!-- <button class="hint-button" @click="showHintModal = true">Hint?</button> -->
         </div>
       </div>
       <div class="task-header-question">
-        <p>Ben decides to use £500 a month of his savings and invest in a <span class="clickable-term" @click="showGlossary = true"><strong>stocks fund portfolio</strong></span>. He chooses the ‘<span class="clickable-term" @click="showGlossary = true"><strong>S&P500 Fund</strong></span>’ because it is predicted to return 8%.</p>
+        <p>
+          Ben decides to use £500 a month of his savings and invest in a <span class="clickable-term" @click="openGlossary('stocksFundPortfolio')"><strong>stocks fund portfolio</strong></span>.
+          He chooses the ‘<span class="clickable-term" @click="openGlossary('sAndP500')"><strong>S&P500 Fund</strong></span>’ because it is predicted to return 8%.
+        </p>
         <img src="../../../../assets/moneybars.png" alt="Task 4 Image" class="task-image">
       </div>
     </div>
 
-    <!-- Glossary Sidebar -->
-    <div v-if="showGlossary" class="glossary-sidebar">
+     <!-- Glossary Sidebar -->
+     <div v-if="showGlossary" class="glossary-sidebar">
       <div class="glossary-header">
-        <h2>📖 Glossary</h2>
+        <h2>{{ glossaryTitle }}</h2>
         <button class="close-button" @click="showGlossary = false">X</button>
       </div>
       <div class="glossary-content">
-        <!-- <h3>Assets</h3>
-        <p>Things you own that are worth money. For example, if you have a bicycle, some books, or a little money in a piggy bank, those are all your assets.</p>
-        <h3>Liabilities</h3>
-        <p>Money you owe to someone else. If you borrowed money from your friend to buy a new game and you have to give it back, that money is a liability.</p>
-        <h3>Income Tax</h3>
-        <p>A portion of the money that people earn from their jobs or other places, which they need to give to the government. This money helps pay for things like schools, roads, and hospitals.</p>
-        <h3>Tax Rates</h3>
-        <p>This tells you how much income tax you need to pay. It’s like a rule that says how much money you give to the government based on how much money you make.</p>
-        <h3>Mortgage</h3>
-        <p>A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.</p>
-        <h3>Cryptocurrency</h3>
-        <p>A type of money you can use on a computer but can't touch like coins or bills. It’s made using special computer codes and you can use it to buy things online.</p> -->
-        <h3>Stocks Fund Portfolio</h3>
-        <p>A basket of different companies that are all put together. When you buy a part of the basket, you own a small piece of all the companies in it. This helps spread the risk because if one company doesn't do well, others in the basket might still grow!</p>
-        <h3>S&P 500</h3>
-        <p>A list of the 500 biggest and most important companies in America. If you invest in the S&P 500, you’re buying a little piece of each of those 500 companies. </p>
-        <h3>Interest</h3>
-        <p>If you save your money in a bank, the bank pays you extra money for letting them keep it there. This extra money is called interest.</p>
-        <h3>Compound Interest</h3>
-        <p>This is when you get interest on both the money you saved and the extra money (interest) you earned before. It's like your money making more money because the interest starts earning interest too!</p>
-        <h3>Annual Return</h3>
-        <p>This is how much money you make or lose from an investment in a year. It tells you how good or bad the investment did.</p>
-        <!-- <h3>Credit Rating</h3>
-        <p>A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.</p> -->
+        <p>{{ glossaryContent }}</p>
       </div>
     </div>
 
@@ -77,7 +56,9 @@
 
     <!-- Question and Points Section -->
     <div class="question-section">
-      <p class="question-text">If he continues to put in £500 a month and the fund has a return of 8% <span class="clickable-term" @click="showGlossary = true"><strong>annually</strong></span>, approximately how much money will he have after 10 years?</p>
+      <p class="question-text">
+        If he continues to put in £500 a month and the fund has a return of 8% <span class="clickable-term" @click="openGlossary('annually')"><strong>annually</strong></span>, approximately how much money will he have after 10 years?
+      </p>
       <div class="points-section">
           <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
           <p class="points">2 points</p>
@@ -164,6 +145,8 @@ export default {
       intervalId: null,
       timerStarted: false, // Timer is initially not started
       showGlossary: false,
+      glossaryTitle: '',
+      glossaryContent: '',
       showHintModal: false,
     };
   },
@@ -179,6 +162,20 @@ export default {
     }
   },
   methods: {
+    openGlossary(term) {
+      this.showGlossary = true;
+
+      if (term === 'stocksFundPortfolio') {
+        this.glossaryTitle = 'Stocks Fund Portfolio';
+        this.glossaryContent = 'A basket of different companies that are all put together. When you buy a part of the basket, you own a small piece of all the companies in it. This helps spread the risk because if one company doesn\'t do well, others in the basket might still grow!';
+      } else if (term === 'sAndP500') {
+        this.glossaryTitle = 'S&P 500';
+        this.glossaryContent = 'A list of the 500 biggest and most important companies in America. If you invest in the S&P 500, you’re buying a little piece of each of those 500 companies.';
+      } else if (term === 'annually') {
+        this.glossaryTitle = 'Annually';
+        this.glossaryContent = 'The return rate is calculated based on a yearly period. For example, an 8% annual return means an 8% increase over one year.';
+      }
+    },
     selectAnswer(answer) {
       this.selectedAnswer = answer;
     },
@@ -262,12 +259,6 @@ export default {
   font-size: 1.5rem;
   cursor: pointer;
   color: #003F91;
-}
-
-.glossary-content h3 {
-  font-size: 1.2rem;
-  color: #333;
-  margin-top: 20px;
 }
 
 .glossary-content p {

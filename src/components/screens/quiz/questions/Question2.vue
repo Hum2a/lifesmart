@@ -22,31 +22,30 @@
       <div class="header-content">
         <h3>Task 2</h3>
         <div class="button-container">
-          <button class="glossary-button" @click="showGlossary = true">Glossary</button>
           <button class="hint-button" @click="showHintModal = true">Hint?</button>
         </div>
       </div>
       <p>
         Ben earns £60,000 a year. 
-        <span class="clickable-term" @click="showGlossary = true"><strong>Income Tax</strong></span>
+        <span class="clickable-term" @click="openGlossary('incomeTax')"><strong>Income Tax</strong></span>
         automatically comes out of his paycheck before he gets the money.</p>
     </div>
 
      <!-- Glossary Sidebar -->
-     <div v-if="showGlossary" class="glossary-sidebar">
+     <!-- <div v-if="showGlossary" class="glossary-sidebar">
       <div class="glossary-header">
         <h2>📖 Glossary</h2>
         <button class="close-button" @click="showGlossary = false">X</button>
       </div>
-      <div class="glossary-content">
+      <div class="glossary-content"> -->
         <!-- <h3>Assets</h3>
         <p>Things you own that are worth money. For example, if you have a bicycle, some books, or a little money in a piggy bank, those are all your assets.</p>
         <h3>Liabilities</h3>
         <p>Money you owe to someone else. If you borrowed money from your friend to buy a new game and you have to give it back, that money is a liability.</p> -->
-        <h3>Income Tax</h3>
+        <!-- <h3>Income Tax</h3>
         <p>A portion of the money that people earn from their jobs or other places, which they need to give to the government. This money helps pay for things like schools, roads, and hospitals.</p>
         <h3>Tax Rates</h3>
-        <p>This tells you how much income tax you need to pay. It’s like a rule that says how much money you give to the government based on how much money you make.</p>
+        <p>This tells you how much income tax you need to pay. It’s like a rule that says how much money you give to the government based on how much money you make.</p> -->
         <!-- <h3>Mortgage</h3>
         <p>A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.</p>
         <h3>Cryptocurrency</h3>
@@ -63,6 +62,17 @@
         <p>This is how much money you make or lose from an investment in a year. It tells you how good or bad the investment did.</p>
         <h3>Credit Rating</h3>
         <p>A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.</p> -->
+      <!-- </div>
+    </div> -->
+
+    <!-- Glossary Sidebar -->
+    <div v-if="showGlossary" class="glossary-sidebar">
+      <div class="glossary-header">
+        <h2>{{ glossaryTitle }}</h2>
+        <button class="close-button" @click="showGlossary = false">X</button>
+      </div>
+      <div class="glossary-content">
+        <p>{{ glossaryContent }}</p>
       </div>
     </div>
 
@@ -82,7 +92,7 @@
         <thead>
           <tr>
             <th>Income</th>
-            <th><span class="clickable-term" @click="showGlossary = true"><strong>Tax Rate</strong></span></th>
+            <th><span class="clickable-term" @click="openGlossary('taxRate')"><strong>Tax Rate</strong></span></th>
             <th>Info</th>
           </tr>
         </thead>
@@ -233,7 +243,9 @@ export default {
       showHintModal: false, // Show/hide hint modal
       timer: 240, // Timer starts at 4 minutes
       intervalId: null,
-      timerStarted: false // Timer is initially not started
+      timerStarted: false,
+      glossaryTitle: '',
+      glossaryContent: '',
     };
   },
   computed: {
@@ -248,6 +260,17 @@ export default {
     }
   },
   methods: {
+    openGlossary(term) {
+      this.showGlossary = true;
+
+      if (term === 'incomeTax') {
+        this.glossaryTitle = 'Income Tax';
+        this.glossaryContent = 'A portion of the money that people earn from their jobs or other places, which they need to give to the government. This money helps pay for things like schools, roads, and hospitals.';
+      } else if (term === 'taxRate') {
+        this.glossaryTitle = 'Tax Rate';
+        this.glossaryContent = 'This tells you how much income tax you need to pay. It’s like a rule that says how much money you give to the government based on how much money you make.';
+      }
+    },
     submitAnswers() {
       this.showResults = true; // Set the showResults flag to true to reveal the correct answer and the comparison of each team's answer
       clearInterval(this.intervalId); // Clear the timer after submission
@@ -443,7 +466,7 @@ export default {
   background-color: #2563eb;
 }
 
-/* Glossary Sidebar */
+/* Glossary Styles (Consolidated) */
 .glossary-sidebar {
   position: fixed;
   top: 0;
@@ -455,7 +478,6 @@ export default {
   z-index: 1000;
   padding: 20px;
   overflow-y: auto;
-  transition: transform 0.3s ease;
 }
 
 .glossary-header {
@@ -477,12 +499,6 @@ export default {
   font-size: 1.5rem;
   cursor: pointer;
   color: #003F91;
-}
-
-.glossary-content h3 {
-  font-size: 1.2rem;
-  color: #333;
-  margin-top: 20px;
 }
 
 .glossary-content p {

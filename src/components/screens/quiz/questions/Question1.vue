@@ -22,20 +22,30 @@
       <div class="header-content">
         <h3>Task 1</h3>
         <div class="button-container">
-          <button class="glossary-button" @click="showGlossary = true">Glossary</button>
           <button class="hint-button" @click="showHintModal = true">Hint?</button>
         </div>
       </div>
       <p>
         Ben is a 30 year old engineer. He has the following
-        <span class="clickable-term" @click="showGlossary = true"><strong>assets</strong></span>
+        <span class="clickable-term" @click="openGlossary('assets')"><strong>assets</strong></span>
         and
-        <span class="clickable-term" @click="showGlossary = true"><strong>liabilities</strong></span>.
+        <span class="clickable-term" @click="openGlossary('liabilities')"><strong>liabilities</strong></span>.
       </p>
     </div>
 
-    <!-- Glossary Sidebar -->
+    <!-- Glossary Modal -->
     <div v-if="showGlossary" class="glossary-sidebar">
+      <div class="glossary-header">
+        <h2>{{ glossaryTitle }}</h2>
+        <button class="close-button" @click="showGlossary = false">X</button>
+      </div>
+      <div class="glossary-content">
+        <p>{{ glossaryContent }}</p>
+      </div>
+    </div>
+
+    <!-- Glossary Sidebar -->
+    <!-- <div v-if="showGlossary" class="glossary-sidebar">
       <div class="glossary-header">
         <h2>📖 Glossary</h2>
         <button class="close-button" @click="showGlossary = false">X</button>
@@ -44,7 +54,7 @@
         <h3>Assets</h3>
         <p>Things you own that are worth money. For example, if you have a bicycle, some books, or a little money in a piggy bank, those are all your assets.</p>
         <h3>Liabilities</h3>
-        <p>Money you owe to someone else. If you borrowed money from your friend to buy a new game and you have to give it back, that money is a liability.</p>
+        <p>Money you owe to someone else. If you borrowed money from your friend to buy a new game and you have to give it back, that money is a liability.</p> -->
         <!-- <h3>Income Tax</h3>
         <p>A portion of the money that people earn from their jobs or other places, which they need to give to the government. This money helps pay for things like schools, roads, and hospitals.</p>
         <h3>Tax Rates</h3>
@@ -65,8 +75,8 @@
         <p>This is how much money you make or lose from an investment in a year. It tells you how good or bad the investment did.</p>
         <h3>Credit Rating</h3>
         <p>A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.</p> -->
-      </div>
-    </div>
+      <!-- </div>
+    </div> -->
 
     <!-- Hint Modal -->
     <div v-if="showHintModal" class="hint-modal-overlay">
@@ -201,7 +211,9 @@ export default {
       showHintModal: false,
       timer: 180, // Timer starts at 180 seconds
       intervalId: null,
-      timerStarted: false // Timer is initially not started
+      timerStarted: false, // Timer is initially not started
+      glossaryTitle: '',
+      glossaryContent: '',
     };
   },
   computed: {
@@ -216,6 +228,17 @@ export default {
     }
   },
   methods: {
+    openGlossary(term) {
+      this.showGlossary = true;
+
+      if (term === 'assets') {
+        this.glossaryTitle = 'Assets';
+        this.glossaryContent = 'Things you own that are worth money. For example, if you have a bicycle, some books, or a little money in a piggy bank, those are all your assets.';
+      } else if (term === 'liabilities') {
+        this.glossaryTitle = 'Liabilities';
+        this.glossaryContent = 'Money you owe to someone else. If you borrowed money from your friend to buy a new game and you have to give it back, that money is a liability.';
+      }
+    },
     submitAnswers() {
       // Set the showResults flag to true to reveal the correct answer and the comparison of each team's answer
       this.showResults = true;
@@ -374,6 +397,48 @@ export default {
   background-color: #dbe9ff;
 }
 
+.glossary-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 350px;
+  height: 100%;
+  background-color: white;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+}
+
+.glossary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.glossary-header h2 {
+  font-size: 1.5rem;
+  color: #003F91;
+}
+
+.glossary-header .close-button {
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #003F91;
+}
+
+.glossary-content p {
+  font-size: 1rem;
+  color: #555;
+  margin-top: 5px;
+  line-height: 1.5;
+}
+
 .hint-button::after {
   font-size: 1rem;
   margin-left: 5px;
@@ -492,19 +557,6 @@ export default {
 }
 
 /* Glossary Sidebar Styling */
-.glossary-sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 350px;
-  height: 100%;
-  background-color: white;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  padding: 20px;
-  overflow-y: auto;
-  transition: transform 0.3s ease;
-}
 
 .glossary-header {
   display: flex;
