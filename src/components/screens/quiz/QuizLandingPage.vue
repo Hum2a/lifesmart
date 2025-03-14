@@ -67,7 +67,7 @@ export default {
     const router = useRouter();
     const showTeamCreation = ref(false);
     const teamCount = ref(1);  // Default team count starts at 1
-    const maxTeams = 5;  // Maximum number of teams
+    const maxTeams = 10000;  // Maximum number of teams
     const teams = ref(Array(teamCount.value).fill(""));  // Initialize an array for storing team names
 
     const startTeamCreation = () => {

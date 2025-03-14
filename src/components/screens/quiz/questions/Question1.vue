@@ -20,17 +20,53 @@
    <!-- Task Description -->
    <div class="task-header">
       <div class="header-content">
-        <h3>Task 1</h3>
+        <div class="points-section">
+          <h3>Challenge 1</h3>
+          <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
+          <p class="points">3 points</p>
+        </div>
         <div class="button-container">
           <button class="hint-button" @click="showHintModal = true">Hint?</button>
         </div>
       </div>
+      <img src="../../../../assets/q1image.png" alt="Task 1 Image" class="task-image">
       <p>
         Ben is a 30 year old engineer. He has the following
-        <span class="clickable-term" @click="openGlossary('assets')"><strong>assets</strong></span>
+        <span
+          class="clickable-term assets-class"
+          @mouseover="showModal('assets', $event)"
+          @mouseleave="hideModal"
+        >
+          <strong>assets</strong>
+        </span>
         and
-        <span class="clickable-term" @click="openGlossary('liabilities')"><strong>liabilities</strong></span>.
+        <span
+          class="clickable-term liabilities-class"
+          @mouseover="showModal('liabilities', $event)"
+          @mouseleave="hideModal"
+        >
+          <strong>liabilities</strong>
+        </span>.
       </p>
+
+      <!-- Modal for definitions -->
+      <div
+        v-if="showHoverModal"
+        class="hover-modal"
+        :style="{ top: modalPosition.top + 'px', left: modalPosition.left + 'px' }"
+      >
+        <h4>{{ modalTitle }}</h4>
+        <p>{{ modalContent }}</p>
+      </div>
+    </div>
+
+    <!-- Annotation Bubble -->
+    <div 
+      v-if="hoverTerm" 
+      class="annotation-bubble" 
+      :style="{ top: bubblePosition.top + 'px', left: bubblePosition.left + 'px' }"
+    >
+      {{ hoverContent }}
     </div>
 
     <!-- Glossary Modal -->
@@ -86,8 +122,6 @@
         <button @click="showHintModal = false" class="close-modal-button">Close</button>
       </div>
     </div>
-
-    <img src="../../../../assets/q1image.png" alt="Task 1 Image" class="task-image">
 
     <!-- Assets and Liabilities Section -->
     <div class="assets-liabilities-wrapper">
@@ -153,10 +187,6 @@
       <!-- Question and Points Section -->
       <div class="question-section">
         <p class="question">What is his net worth?</p>
-        <div class="points-section">
-          <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
-          <p class="points">3 points</p>
-        </div>
         <!-- <p class="points">⚡ 3 points</p> -->
       </div>
 
@@ -214,6 +244,13 @@ export default {
       timerStarted: false, // Timer is initially not started
       glossaryTitle: '',
       glossaryContent: '',
+      hoverTerm: null, // Tracks the hovered term
+      hoverContent: '', // The content of the annotation bubble
+      bubblePosition: { top: 0, left: 0 }, // Tracks the position of the bubble
+      showHoverModal: false, // Track if the hover modal is visible
+      modalTitle: '', // The title of the modal
+      modalContent: '', // The content of the modal
+      modalPosition: { top: 0, left: 0 }, // Position of the modal
     };
   },
   computed: {
@@ -238,6 +275,43 @@ export default {
         this.glossaryTitle = 'Liabilities';
         this.glossaryContent = 'Money you owe to someone else. If you borrowed money from your friend to buy a new game and you have to give it back, that money is a liability.';
       }
+    },
+    showModal(term, event) {
+      if (term === 'assets') {
+        this.modalTitle = 'Assets';
+        this.modalContent =
+          'Assets are things you own that have monetary value, such as cash, property, or investments.';
+      } else if (term === 'liabilities') {
+        this.modalTitle = 'Liabilities';
+        this.modalContent =
+          'Liabilities are things you owe, such as debts or financial obligations.';
+      }
+      this.showHoverModal = true;
+
+      // Dynamically position the modal
+      this.modalPosition = {
+        top: event.target.getBoundingClientRect().top + window.scrollY - 60, // Adjust position
+        left: event.target.getBoundingClientRect().left + window.scrollX + 20, // Adjust alignment
+      };
+    },
+    hideModal() {
+      this.showHoverModal = false;
+    },
+    showDefinition(term, event) {
+      this.hoverTerm = term;
+      if (term === 'assets') {
+        this.hoverContent = 'Things you own that are worth money.';
+      } else if (term === 'liabilities') {
+        this.hoverContent = 'Money you owe to someone else.';
+      }
+      // Position the annotation bubble near the hovered element
+      this.bubblePosition = {
+        top: event.target.getBoundingClientRect().top + window.scrollY - 40, // Adjust to position above
+        left: event.target.getBoundingClientRect().left + window.scrollX + 10 // Adjust for alignment
+      };
+    },
+    hideDefinition() {
+      this.hoverTerm = null;
     },
     submitAnswers() {
       // Set the showResults flag to true to reveal the correct answer and the comparison of each team's answer
@@ -337,11 +411,24 @@ export default {
   background-color: #45a04933;
 }
 
+.annotation-bubble {
+  position: absolute;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 0.9rem;
+  color: #333;
+  z-index: 1000;
+  white-space: nowrap;
+}
+
 /* Task Header */
 .task-header {
   display: flex;
   flex-direction: column;
-  align-items: start;
+  align-items: center;
   margin-top: 20px;
 }
 
@@ -353,7 +440,7 @@ export default {
 }
 
 .task-header h3 {
-  font-size: 1.5rem;
+  font-size: 2.3rem;
   color: #000;
   flex-grow: 1;
   text-align: start;
@@ -361,7 +448,7 @@ export default {
 
 .task-header p {
   color: #555;
-  font-size: 1rem;
+  font-size: 1.7rem;
   margin-top: 5px;
 }
 
@@ -375,6 +462,16 @@ export default {
   color: #2563eb;
 }
 
+.assets-class {
+  color: green;
+  font-weight: bold; /* Optional: To make the color stand out */
+}
+
+.liabilities-class {
+  color: red;
+  font-weight: bold; /* Optional: To make the color stand out */
+}
+
 .button-container {
   display: flex;
   gap: 10px;
@@ -386,7 +483,7 @@ export default {
   border: 1px solid #e0e0e0;
   color: #003F91;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 1rem;
   padding: 8px 16px;
   border-radius: 20px;
   cursor: pointer;
@@ -420,27 +517,27 @@ export default {
 }
 
 .glossary-header h2 {
-  font-size: 1.5rem;
+  font-size: 2rem;
   color: #003F91;
 }
 
 .glossary-header .close-button {
   background-color: transparent;
   border: none;
-  font-size: 1.5rem;
+  font-size: 2rem;
   cursor: pointer;
   color: #003F91;
 }
 
 .glossary-content p {
-  font-size: 1rem;
+  font-size: 1.5rem;
   color: #555;
   margin-top: 5px;
   line-height: 1.5;
 }
 
 .hint-button::after {
-  font-size: 1rem;
+  font-size: 1.8rem;
   margin-left: 5px;
 }
 
@@ -467,7 +564,7 @@ export default {
 }
 
 .hint-modal h3 {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   margin-bottom: 10px;
   color: #000;
 }
@@ -503,6 +600,7 @@ export default {
 .task-image {
   width: 300px;
   margin-right: 20px;
+  align-content: center;
 }
 
 .assets-liabilities {
@@ -520,7 +618,7 @@ export default {
 }
 
 .card h4 {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   margin-bottom: 10px;
   color: #000000B2;
 }
@@ -535,7 +633,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: #000000;
 }
 
@@ -567,7 +665,7 @@ export default {
 }
 
 .glossary-header h2 {
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   color: #003F91;
 }
 
@@ -580,7 +678,7 @@ export default {
 }
 
 .glossary-content h3 {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   color: #333;
   margin-top: 20px;
 }
@@ -615,14 +713,14 @@ export default {
 }
 
 .points {
-  font-size: 1rem;
+  font-size: 1.3rem;
   color: #3b82f6;
-  font-size: 1.2rem;
   font-weight: bold;
 }
 
 .lightning-bolt {
-  width: 20px;
+  width: 40px;
+  height: 40px;
 }
 
 /* Multiple Choice Section */
@@ -643,7 +741,7 @@ export default {
   border: none;
   border-radius: 10px;
   color: #1e3a8a;
-  font-size: 1rem;
+  font-size: 1.3rem;
 }
 
 .choice-button:hover {
@@ -687,7 +785,7 @@ export default {
   border-radius: 10px;
   border: 1px solid #ccc;
   background-color: #e0f2ff;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   text-align: center;
 }
 
@@ -703,7 +801,7 @@ export default {
 
 .correct-answer {
   display: inline-block;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: bold;
   color: #000; /* Green color for correct answer */
   margin: 20px;
@@ -738,7 +836,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: bold;
 }
 
@@ -763,7 +861,7 @@ export default {
   border: none;
   padding: 10px;
   border-radius: 30px;
-  font-size: 1rem;
+  font-size: 1.4rem;
   cursor: pointer;
   margin-top: 20px;
 }
@@ -772,4 +870,29 @@ export default {
 .next-button:hover {
   background-color: #2563eb;
 }
+
+.hover-modal {
+  position: absolute;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  z-index: 1000;
+  width: 200px;
+  text-align: left;
+  font-size: 0.9rem;
+  color: #333;
+}
+.hover-modal h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #003f91;
+}
+.hover-modal p {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
 </style>

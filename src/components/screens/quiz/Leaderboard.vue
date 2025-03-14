@@ -85,7 +85,7 @@ export default {
 
 /* Title for the leaderboard */
 .leaderboard-title {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 30px;
   color: #000000;
@@ -139,7 +139,7 @@ export default {
 
 /* Rank text at the top of the podium */
 .podium-rank {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: bold;
   background-color: rgba(0, 0, 0, 0.6);
   padding: 5px 5px;
@@ -193,7 +193,7 @@ export default {
 
 /* Rank and team info inside the card */
 .team-rank {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: bold;
   background-color: rgba(0, 0, 0, 0.1);
   padding: 8px 15px;
@@ -221,7 +221,7 @@ export default {
   background-color: #1e3a8a;
   color: white;
   padding: 15px 40px;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   border: none;
   border-radius: 10px;
   cursor: pointer;

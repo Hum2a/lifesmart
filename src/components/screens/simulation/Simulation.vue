@@ -4,9 +4,9 @@
       <img src="../../../assets/LifeSmartLogo.png" alt="Logo" class="logo">
     </header>
 
-    <div class="sim-chart-container">
+    <!-- <div class="sim-chart-container">
       <asset-changes-chart />
-    </div>
+    </div> -->
 
     <div class="sim-chart-container">
       <canvas id="portfolioChart" ref="portfolioChart"></canvas>
@@ -23,7 +23,8 @@
 
 <script>
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
-import AssetChangesChart from './charts/AssetChangesChart.vue';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+// import AssetChangesChart from './charts/AssetChangesChart.vue';
 import { useRouter } from 'vue-router';
 import Chart from 'chart.js/auto';
 import { shallowRef, nextTick } from 'vue';
@@ -31,7 +32,7 @@ import { shallowRef, nextTick } from 'vue';
 export default {
   name: 'SimulationPage',
   components: {
-    AssetChangesChart,
+    // AssetChangesChart,
   },
   setup() {
     const router = useRouter();
@@ -40,6 +41,7 @@ export default {
   },
   data() {
     return {
+      uid: null, // User UID
       latestSimulationIndex: null,
       groups: [],
       simulationMonths: 0,
@@ -73,11 +75,25 @@ export default {
     }
   },
   async created() {
-    this.latestSimulationIndex = await this.fetchLatestSimulationIndex();
-    if (this.latestSimulationIndex) {
-      await this.initializeData();
-      this.initializeChart();
-    }
+    const auth = getAuth();
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        this.uid = user.uid;
+        console.log("User UID:", this.uid);
+
+        this.latestSimulationIndex = await this.fetchLatestSimulationIndex();
+        if (this.latestSimulationIndex) {
+          await this.initializeData();
+          this.initializeChart();
+        } else {
+          console.error("No simulations found for user.");
+        }
+      } else {
+        console.error("No user is logged in. Redirecting to home.");
+        this.$router.push({ name: "Home" });
+      }
+    });
   },
   beforeUnmount() {
     if (this.portfolioChart.value) {
@@ -87,7 +103,7 @@ export default {
   methods: {
     async fetchLatestSimulationIndex() {
       const db = getFirestore();
-      const simulationsRef = collection(db, 'Quiz', 'Asset Market Simulations', 'Simulations');
+      const simulationsRef = collection(db, this.uid, "Asset Market Simulations", "Simulations");
       const querySnapshot = await getDocs(simulationsRef);
       console.log("fetchLatestSimulationIndex: querySnapshot.size", querySnapshot.size);
       if (querySnapshot.empty) {
@@ -109,10 +125,10 @@ export default {
       const querySnapshot = await getDocs(
         collection(
           db,
-          'Quiz',
+          this.uid,
           'Asset Market Simulations',
           'Simulations',
-          `Simulation ${this.latestSimulationIndex}`,
+         'Simulation 1',
           'Groups'
         )
       );
@@ -192,6 +208,7 @@ export default {
       this.groups.forEach(group => {
         let totalValue = 0;
 
+        console.log(`\nGroup: ${group.name} - Quarter ${quarterIndex + 1}`);
         Object.keys(assetChangesForQuarter).forEach(assetType => {
           const growthRate = assetChangesForQuarter[assetType] / 100;
           const assetKey = assetType.toLowerCase();
@@ -199,10 +216,16 @@ export default {
           const newValue = currentValue * (1 + growthRate);
           group.quarterlyValues[assetKey].push(newValue);
 
+          console.log(`  Asset: ${assetType}`);
+          console.log(`    Previous Value: ${currentValue.toFixed(2)}`);
+          console.log(`    Growth Rate: ${growthRate * 100}%`);
+          console.log(`    New Value: ${newValue.toFixed(2)}`);
+
           totalValue += newValue;
         });
 
         group.totalPortfolioValues.quarters.push(totalValue);
+        console.log(`  Total Portfolio Value: ${totalValue.toFixed(2)}`);
       });
 
       this.currentQuarterIndex++;
@@ -265,7 +288,7 @@ export default {
       });
 
       const db = getFirestore();
-      const docRef = doc(db, 'Quiz', 'Asset Market Simulations', 'Simulations', `Simulation ${this.latestSimulationIndex}`, "Results", "Final");
+      const docRef = doc(db, this.uid, 'Asset Market Simulations', 'Simulations','Simulation 1', "Results", "Final");
       setDoc(docRef, { finalValues })
         .then(() => {
           console.log("finalValues: Document successfully written with final simulation results!");
@@ -289,7 +312,7 @@ export default {
       });
 
       const db = getFirestore();
-      const docRef = doc(db, 'Quiz', 'Asset Market Simulations', 'Simulations', `Simulation ${this.latestSimulationIndex}`, "Results", "Quarters");
+      const docRef = doc(db, this.uid, 'Asset Market Simulations', 'Simulations','Simulation 1', "Results", "Quarters");
       setDoc(docRef, { quarterResults })
         .then(() => {
           console.log("quarterValues: Quarterly results successfully written to Firestore!");

@@ -4,82 +4,64 @@
     <button @click="goHome" class="home-button">Go to Home</button>
     <button @click="saveResultsAndNavigate" class="simulation-button">Go to Simulation</button>
     
-    <h2>Leaderboard</h2>
+    <h2 class="title">Scoreboard</h2>
 
-    <!-- Bar Chart Representation for Points -->
-    <div class="team-results">
-      <div
-        v-for="(team, index) in rankedTeams"
-        :key="team.name"
-        :class="['team-bar-container', { expanded: expandedTeam === team.name, 'winning-team': team.rank === 1 }]"
-        :style="{ backgroundColor: team.rank === 1 ? '#C5FF9A' : '', color: team.rank === 1 ? 'black' : '' }"
-        @click="toggleTeamExpansion(team.name)"
-      >
-        <div class="team-bar">
-          <p class="team-name">
-            {{ team.rank }}. {{ team.name }}
-            <img v-if="team.rank === 1" src="../../../assets/crown.png" alt="Crown" class="crown-icon" />
-          </p>
-          <div class="bar-wrapper">
-            <div class="bar" :style="{ width: barWidths[team.name] + '%', transitionDelay: index * 0.2 + 's' }"></div>
+    <div class="content-wrapper">
+      <!-- Bar Chart Representation for Points -->
+      <div class="team-results">
+        <div
+          v-for="(team, index) in rankedTeams"
+          :key="team.name"
+          :class="['team-bar-container', { expanded: expandedTeam === team.name, 'winning-team': team.rank === 1 }]"
+          :style="{ backgroundColor: team.rank === 1 ? '#C5FF9A' : '', color: team.rank === 1 ? 'black' : '' }"
+          @click="toggleTeamExpansion(team.name)"
+        >
+          <div class="team-bar">
+            <p class="team-name">
+              {{ team.rank }}. {{ team.name }}
+              <img v-if="team.rank === 1" src="../../../assets/crown.png" alt="Crown" class="crown-icon" />
+            </p>
+            <div class="bar-wrapper">
+              <div class="bar" :style="{ width: barWidths[team.name] + '%', transitionDelay: index * 0.2 + 's' }"></div>
+            </div>
+            <div class="points-info">
+              <p class="points" :style="{ color: team.rank === 1 ? 'black' : 'white' }">⚡ {{ team.points }}</p>
+            </div>
           </div>
-          <div class="points-info">
-            <p class="points" :style="{ color: team.rank === 1 ? 'black' : 'white' }">⚡ {{ team.points }}</p>
-            <p class="rank-change" :style="{ color: team.rank === 1 ? 'black' : 'white' }">⬆</p>
+
+          <!-- Points Breakdown Table, shown when expanded -->
+          <div v-if="expandedTeam === team.name" class="team-points-breakdown">
+            <table>
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(points, task) in team.taskScores" :key="task">
+                  <td>Task {{ task }}</td>
+                  <td>{{ points }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-
-        <!-- Points Breakdown Table, shown when expanded -->
-        <div v-if="expandedTeam === team.name" class="team-points-breakdown">
-          <table>
-            <thead>
-              <tr>
-                <th>Task</th>
-                <th>Points</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Task 1</td>
-                <td>{{ team.taskScores[1] }}</td>
-              </tr>
-              <tr>
-                <td>Task 2</td>
-                <td>{{ team.taskScores[2] }}</td>
-              </tr>
-              <tr>
-                <td>Task 3</td>
-                <td>{{ team.taskScores[3] }}</td>
-              </tr>
-              <tr>
-                <td>Task 4</td>
-                <td>{{ team.taskScores[4] }}</td>
-              </tr>
-              <tr>
-                <td>Task 5</td>
-                <td>{{ team.taskScores[5] }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Next Button -->
+        <div class="next-button-container">
+          <button class="next-button" @click="nextOrNavigateToSimulation">Next</button>
         </div>
       </div>
-    </div>
-
-    <!-- Button container -->
-    <div class="button-container">
-      <button @click="goHome" class="home-button">Go to Home</button>
-      <!-- Next button will emit the next-question event, or navigate to the simulation if the quiz is complete -->
-      <button class="next-button" @click="nextOrNavigateToSimulation">Next</button>
-      <button @click="saveResultsAndNavigate" class="simulation-button">Go to Simulation</button>
     </div>
   </div>
 </template>
 
 <script>
-import { getFirestore, collection, setDoc, doc, getDocs, deleteDoc } from 'firebase/firestore';
+import { getFirestore, collection, setDoc, doc, getDocs, deleteDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 export default {
-  name: 'ResultsScreen',
+  name: "ResultsScreen",
   props: {
     teams: {
       type: Array,
@@ -96,6 +78,7 @@ export default {
       barWidths: {}, // Object to hold the final bar widths
       expandedTeam: null, // Track which team is expanded
       maxPoints: 23, // The total number of points available in the quiz
+      uid: null, // Store the current user's UID
     };
   },
   computed: {
@@ -132,16 +115,23 @@ export default {
       this.expandedTeam = this.expandedTeam === teamName ? null : teamName;
     },
     goHome() {
-      this.$router.push({ name: 'Home' });
+      this.$router.push({ name: "Home" });
     },
     async saveResultsAndNavigate() {
       const db = getFirestore();
-      const teamsCollectionRef = collection(db, 'Quiz', 'Quiz Simulations', 'Teams');
+      const teamsCollectionRef = collection(
+        db,
+        this.uid,
+        "Quiz Simulations",
+        "Teams"
+      );
 
       try {
-        // Retrieve and delete all existing team documents
+        // Retrieve and delete all existing team documents for this user
         const snapshot = await getDocs(teamsCollectionRef);
-        const deletePromises = snapshot.docs.map(docSnapshot => deleteDoc(docSnapshot.ref));
+        const deletePromises = snapshot.docs.map((docSnapshot) =>
+          deleteDoc(docSnapshot.ref)
+        );
         await Promise.all(deletePromises);
 
         // Save new team's data from the current session
@@ -150,15 +140,16 @@ export default {
           return setDoc(teamDocRef, {
             name: team.name,
             points: team.points,
+            taskScores: team.taskScores, // Include task-specific points
           });
         });
 
         await Promise.all(savePromises); // Wait until all saving operations are done
 
         // Navigate to the simulation screen
-        this.$router.push({ name: 'QuizSimulation' });
+        this.$router.push({ name: "QuizSimulation" });
       } catch (error) {
-        console.error('Error during saving results to Firebase:', error);
+        console.error("Error during saving results to Firebase:", error);
       }
     },
     nextOrNavigateToSimulation() {
@@ -167,11 +158,21 @@ export default {
         this.saveResultsAndNavigate();
       } else {
         // Otherwise, emit the next-question event
-        this.$emit('next-question');
+        this.$emit("next-question");
       }
     },
   },
   mounted() {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+    if (currentUser) {
+      this.uid = currentUser.uid; // Retrieve the user's UID
+    } else {
+      console.error("No user is logged in.");
+      this.$router.push({ name: "Home" }); // Redirect to home if no user is logged in
+    }
+
     // Set the initial widths to 0 for animation
     this.sortedTeams.forEach((team) => {
       this.barWidths[team.name] = 0;
@@ -196,58 +197,105 @@ export default {
   justify-content: center;
   padding: 30px;
   background: linear-gradient(to bottom, #c2e9fb, #a1c4fd); /* Light blue gradient */
-  color: #ffffff;
+  background: url('../../../assets/classroom.jpg') no-repeat center center; /* Add the background image */
+  background-size: cover; /* Ensure the image covers the entire container */
   border-radius: 10px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   width: 100%;
   height: 100vh;
   animation: slideIn 1s ease-out;
+  box-sizing: border-box; /* Include padding in dimensions */
 }
 
 .results-container h2 {
-  color: white;
-  font-size: 2.5rem;
+  position: absolute; /* Position at the top without affecting other elements */
+  top: 20px; /* Adjust to place at the top of the screen */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Offset half the width to perfectly center */
+  background-color: white; /* White background */
+  padding: 10px 20px; /* Add padding for better aesthetics */
+  border-radius: 10px; /* Optional: round the corners */
+  font-size: 2.5rem; /* Adjust font size */
+  color: black; /* Text color */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  z-index: 1000; /* Ensure it appears above other elements */
 }
 
+.content-wrapper {
+  display: flex;
+  flex-direction: column; /* Stack team-results and next-button-container vertically */
+  align-items: center; /* Center horizontally */
+  justify-content: flex-start; /* Start from the top */
+  width: 100%;
+  height: calc(100% - 80px); /* Adjust for the scoreboard title */
+  overflow-y: auto; /* Allow scrolling if content exceeds screen */
+  padding: 10px 0;
+}
 .team-results {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center; /* Center the team results vertically */
+  position: absolute; /* Position relative to the container */
+  top: 50%; /* Center vertically */
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Adjust for exact centering */
+  width: 100%; /* Ensure it spans the full width */
+  padding: 20px; /* Add padding for spacing */
+  overflow-y: hidden; /* Allow scrolling if content exceeds screen height */
+  box-sizing: border-box; /* Include padding in width and height */
 }
 
 .team-bar-container {
   display: flex;
   flex-direction: column;
-  background-color: #8397BF;
+  background-color: #8397bf;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 60%;
   height: 40px;
   overflow: hidden;
-  transition: height 0.3s ease, background-color 0.3s;
   cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  line-height: '1.5';
+  margin-bottom: '10px';
 }
 
 .team-bar-container:hover {
-  background-color: #768BAE; /* Slight color change on hover */
+  background-color: #768bae; /* Slightly darker shade */
+  transform: scale(1.05); /* Slightly enlarge the container */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Increase the shadow for depth */
 }
 
 .team-bar-container.expanded {
-  height: 320px;
+  height: 320px; /* Expand height for expanded content */
 }
 
 .team-bar {
+  flex: 2;
   display: flex;
-  align-items: center;
+  align-items: center;;
   width: 100%;
   justify-content: space-between;
 }
 
 .team-name {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   margin-right: 20px;
   flex-basis: 15%; /* Reserve space for the team name */
+  flex: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  padding-right: 10px;
+  font-weight: bold;
+}
+
+.team-result-bar {
+  flex: 2;
+  display: flex;
+  align-items: center;
 }
 
 /* Wrapper to control alignment and contain the bar */
@@ -283,13 +331,13 @@ export default {
 }
 
 .points {
-  font-size: 1rem;
+  font-size: 1.4rem;
   font-weight: bold;
   color: white;
 }
 
 .rank-change {
-  font-size: 1rem;
+  font-size: 1.5rem;
   color: white;
 }
 
@@ -302,7 +350,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
-  font-size: 1rem;
+  font-size: 1.5rem;
   color: #fff;
 }
 
@@ -338,13 +386,17 @@ tbody tr:hover {
   gap: 15px;
 }
 
+.title {
+  color: black;
+}
+
 .home-button {
   position: absolute;
   top: 20px;
   left: 20px;
   padding: 10px 20px;
-  background-color: #1abc9c;
-  color: white;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -360,8 +412,8 @@ tbody tr:hover {
   top: 20px;
   right: 20px;
   padding: 10px 20px;
-  background-color: #1abc9c;
-  color: white;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -372,6 +424,14 @@ tbody tr:hover {
   background-color: #16a085;
 }
 
+.next-button-container {
+  width: 100%; /* Full width to align with the content */
+  display: flex;
+  justify-content: center; /* Center the button */
+  margin-top: 20px; /* Space above */
+  padding: 10px 0;
+}
+
 .next-button {
   font-weight: bold;
   color: black;
@@ -379,10 +439,15 @@ tbody tr:hover {
   border-color: black;
   border-radius: 20px;
   border-width: 4px;
-  box-shadow: inset;
-  padding: 10px;
-  width: 7%;
+  padding: 10px 20px;
+  width: 150px; /* Fixed width */
+  cursor: pointer;
   transition: 0.3s ease;
+}
+
+.next-button:hover {
+  background-color: #f0f0f0;
+  transform: scale(1.05); /* Slightly enlarge on hover */
 }
 
 .crown-icon {

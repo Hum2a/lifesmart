@@ -54,7 +54,7 @@
       <!-- Task Description -->
       <div class="task-header">
         <div class="header-content">
-          <h3>Task 6</h3>
+          <h3>Challenge 6</h3>
           <div class="button-container">
             <button class="glossary-button" @click="showGlossary = true">📖 Glossary</button>
             <!-- <button class="hint-button" @click="showHintModal = true">💡 Hint</button> -->
@@ -67,7 +67,7 @@
       </div>
   
       <!-- Image -->
-      <img src="../../../../assets/q6image.png" alt="Investment Allocation Image" class="allocation-image" />
+      <!-- <img src="../../../../assets/q6image.png" alt="Investment Allocation Image" class="allocation-image" /> -->
   
       <!-- Asset Allocation Section -->
       <div class="allocation-header">
@@ -170,7 +170,7 @@
       }, 1000);
     },
     toggleAsset(index) {
-      this.expandedAssets[index] = !this.expandedAssets[index];
+      this.expandedAssets = this.expandedAssets.map((expanded, i) => i === index ? !expanded : false);
     },
     nextQuestion() {
       this.$emit("next-question");
@@ -237,13 +237,13 @@
   }
   
   .task-header h3 {
-    font-size: 1.5rem;
+    font-size: 2rem;
     color: #000;
   }
   
   .task-header p {
     color: #555;
-    font-size: 1rem;
+    font-size: 1.5rem;
     margin-top: 5px;
   }
   
@@ -273,6 +273,8 @@
   
   .allocation-header {
     color: #000;
+    margin-top: 20px;
+    font-size: 1.4rem;
   }
   
   .asset-classes-container {
@@ -294,7 +296,7 @@
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.7s ease;
     width: 100%;
   }
   
@@ -310,7 +312,7 @@
     padding: 10px;
     margin-top: 10px;
     border-radius: 5px;
-    transition: max-height 0.3s ease;
+    transition: max-height 0.7s ease;
   }
     
   .asset-icon {

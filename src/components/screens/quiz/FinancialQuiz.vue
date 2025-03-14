@@ -36,35 +36,45 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { getFirestore, collection, setDoc, doc, getDocs, deleteDoc } from 'firebase/firestore';
-import ResultsScreen from './ResultsScreen.vue'; // Import ResultsScreen component
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import {
+  getFirestore,
+  collection,
+  setDoc,
+  doc,
+  getDocs,
+  deleteDoc,
+} from "firebase/firestore";
+import { getAuth } from "firebase/auth"; // Import Firebase Auth
+import ResultsScreen from "./ResultsScreen.vue"; // Import ResultsScreen component
 
 // Import all question components
-import Question1 from './questions/Question1.vue';
-import Question2 from './questions/Question2.vue';
-import Question3 from './questions/Question3.vue';
-import Question4 from './questions/Question4.vue';
-import Question5 from './questions/Question5.vue';
-import Question6 from './questions/Question6.vue';
+import Question1 from "./questions/Question1.vue";
+import Question2 from "./questions/Question2.vue";
+import Question3 from "./questions/Question3.vue";
+import Question4 from "./questions/Question4.vue";
+import Question5 from "./questions/Question5.vue";
+import Question6 from "./questions/Question6.vue";
 
 export default {
-  name: 'FinancialQuiz',
+  name: "FinancialQuiz",
   components: {
-    ResultsScreen // Register ResultsScreen component
+    ResultsScreen, // Register ResultsScreen component
   },
   setup() {
     const route = useRoute();
     const router = useRouter();
     const db = getFirestore();
+    const auth = getAuth(); // Firebase Authentication
 
+    const uid = ref(null); // Store the user's UID
     const teams = ref(
       route.query.teams
-        ? route.query.teams.split(',').map(name => ({ 
-            name, 
-            points: 0, 
-            taskScores: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } // Initialize taskScores for each task
+        ? route.query.teams.split(",").map((name) => ({
+            name,
+            points: 0,
+            taskScores: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, // Initialize taskScores for each task
           }))
         : []
     );
@@ -80,17 +90,19 @@ export default {
       Question3,
       Question4,
       Question5,
-      Question6
+      Question6,
     ];
 
-    const currentQuestionComponent = computed(() => questionComponents[currentQuestionIndex.value]);
+    const currentQuestionComponent = computed(
+      () => questionComponents[currentQuestionIndex.value]
+    );
 
     const sortedTeams = computed(() => {
       return [...teams.value].sort((a, b) => b.points - a.points);
     });
 
     const handleAnswer = (answer) => {
-      console.log('Team answered:', answer);
+      console.log("Team answered:", answer);
     };
 
     const updateScores = (scores) => {
@@ -116,41 +128,63 @@ export default {
     };
 
     const goHome = () => {
-      router.push({ name: 'Home' });
+      router.push({ name: "Home" });
     };
 
     const saveResultsAndNavigate = async () => {
-      const teamsCollectionRef = collection(db, 'Quiz', 'Quiz Simulations', 'Teams');
+      if (!uid.value) {
+        alert("No user is logged in. Please sign in.");
+        router.push({ name: "Home" });
+        return;
+      }
+
+      const teamsCollectionRef = collection(
+        db,
+        uid.value,
+        "Quiz Simulations",
+        "Teams"
+      );
 
       try {
-        // Step 1: Retrieve and delete all existing team documents
+        // Step 1: Retrieve and delete all existing team documents for this user
         const snapshot = await getDocs(teamsCollectionRef);
 
-        const deletePromises = snapshot.docs.map(docSnapshot => deleteDoc(docSnapshot.ref));
+        const deletePromises = snapshot.docs.map((docSnapshot) =>
+          deleteDoc(docSnapshot.ref)
+        );
         await Promise.all(deletePromises); // Wait until all deletion operations are done
 
-        console.log('All old teams deleted from Firebase.');
+        console.log("All old teams deleted from Firebase for this user.");
 
         // Step 2: Save each new team's data from the current session
-        const savePromises = sortedTeams.value.map(team => {
+        const savePromises = sortedTeams.value.map((team) => {
           const teamDocRef = doc(teamsCollectionRef, team.name);
           return setDoc(teamDocRef, {
             name: team.name,
-            points: team.points
+            points: team.points,
           });
         });
 
         await Promise.all(savePromises); // Wait until all saving operations are done
 
-        console.log('New results saved to Firebase:', sortedTeams.value);
+        console.log("New results saved to Firebase:", sortedTeams.value);
 
         // Step 3: Navigate to the simulation screen only after all operations are complete
-        router.push({ name: 'QuizSimulation' });
-
+        router.push({ name: "QuizSimulation" });
       } catch (error) {
-        console.error('Error during saving results to Firebase:', error);
+        console.error("Error during saving results to Firebase:", error);
       }
     };
+
+    onMounted(() => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        uid.value = currentUser.uid; // Get the current user's UID
+      } else {
+        console.error("No user is logged in.");
+        router.push({ name: "Home" }); // Redirect to home if no user is logged in
+      }
+    });
 
     return {
       teams,

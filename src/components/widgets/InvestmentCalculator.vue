@@ -14,18 +14,10 @@
           <label for="investmentPeriod">Investment Period (Years):</label>
           <input type="number" placeholder="10" id="investmentPeriod" v-model="investmentPeriod" class="calculator-input">
         </div>
-        <!-- New Input Fields for Interest Rates -->
+        <!-- Single Interest Rate Input -->
         <div class="input-group">
-          <label for="rate1">Interest Rate 1 (%):</label>
-          <input type="number" v-model="rates[0]" placeholder="3" class="calculator-input">
-        </div>
-        <div class="input-group">
-          <label for="rate2">Interest Rate 2 (%):</label>
-          <input type="number" v-model="rates[1]" placeholder="8" class="calculator-input">
-        </div>
-        <div class="input-group">
-          <label for="rate3">Interest Rate 3 (%):</label>
-          <input type="number" v-model="rates[2]" placeholder="12" class="calculator-input">
+          <label for="rate">Interest Rate (%):</label>
+          <input type="number" v-model="rate" placeholder="8" class="calculator-input">
         </div>
         <button @click="calculate" class="calculate-button">Calculate</button>
       </div>
@@ -37,11 +29,11 @@
     </div>
 
     <!-- Results -->
-    <div class="result" v-if="futureValues.length > 0">
-      <h4>Future Values for Different Rates:</h4>
-      <div v-for="(value, index) in futureValues" :key="'futureValue' + index" class="result-box">
-        <p>At <strong>{{ rates[index] }}%</strong> return rate:</p>
-        <span class="future-value">£{{ formatNumber(value) }}</span> <!-- Using formatNumber method -->
+    <div class="result" v-if="futureValue">
+      <h4>Future Value:</h4>
+      <div class="result-box">
+        <p>At <strong>{{ rate }}%</strong> return rate:</p>
+        <span class="future-value">£{{ formatNumber(futureValue) }}</span>
       </div>
     </div>
   </div>
@@ -57,8 +49,8 @@ export default {
       initialInvestment: 0,
       monthlyContribution: 500,
       investmentPeriod: 10,
-      rates: [3, 8, 12], // Default return rates in percentages
-      futureValues: [],
+      rate: 8, // Default return rate in percentage
+      futureValue: null,
       chart: null,
     };
   },
@@ -70,7 +62,7 @@ export default {
       // Converts the value to a string with commas as thousand separators
       return parseFloat(value).toLocaleString('en-GB'); // 'en-GB' for UK style commas
     },
-    renderChart(datasets = []) {
+    renderChart(data = []) {
       const ctx = document.getElementById('investmentChart').getContext('2d');
       if (this.chart) {
         this.chart.destroy();
@@ -79,7 +71,14 @@ export default {
         type: 'line',
         data: {
           labels: Array.from({ length: this.investmentPeriod + 1 }, (_, i) => (i === 0 ? 'Start' : `Year ${i}`)),
-          datasets: datasets
+          datasets: [{
+            label: `Growth at ${this.rate}%`,
+            data: data,
+            borderColor: '#4CAF50',
+            fill: false,
+            tension: 0.4,
+            borderWidth: 2
+          }]
         },
         options: {
           plugins: {
@@ -137,42 +136,17 @@ export default {
       const principal = parseFloat(this.initialInvestment);
       const monthlyContribution = parseFloat(this.monthlyContribution);
       const years = parseInt(this.investmentPeriod);
+      const monthlyRate = this.rate / 100 / 12;
+      let currentValue = principal;
+      const data = [currentValue];
 
-      const datasets = [];
-      this.futureValues = [];
-
-      // Calculate for each rate in the rates array
-      this.rates.forEach((rate) => {
-        const monthlyRate = rate / 100 / 12;
-        let currentValue = principal;
-        const data = [currentValue];
-
-        for (let i = 1; i <= years * 12; i++) {
-          currentValue = currentValue * (1 + monthlyRate) + monthlyContribution;
-          if (i % 12 === 0) data.push(currentValue);
-        }
-
-        datasets.push({
-          label: `Growth at ${rate}%`,
-          data: data,
-          borderColor: this.getRandomColor(),
-          fill: false,
-          tension: 0.4,
-          borderWidth: 2
-        });
-
-        this.futureValues.push(currentValue.toFixed(2));
-      });
-
-      this.renderChart(datasets);
-    },
-    getRandomColor() {
-      const letters = '0123456789ABCDEF';
-      let color = '#';
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
+      for (let i = 1; i <= years * 12; i++) {
+        currentValue = currentValue * (1 + monthlyRate) + monthlyContribution;
+        if (i % 12 === 0) data.push(currentValue);
       }
-      return color;
+
+      this.futureValue = currentValue.toFixed(2);
+      this.renderChart(data);
     }
   }
 };

@@ -4,14 +4,17 @@
     <header class="header">
       <img src="../../../assets/LifeSmartLogo.png" alt="Logo" class="logo">
       <div class="header-icons">
-        <button @click="toggleCalculator" class="calculator-toggle">
+        <!-- <button @click="toggleCalculator" class="calculator-toggle">
           <i class="fas fa-calculator"></i>
-        </button>
+        </button> -->
         <button @click="toggleSimulationControls" class="simulation-controls-toggle">
           <img src="../../../assets/settings (1) 1.png" alt="Controls">
         </button>
-        <button @click="toggleSimulationHistory" class="simulation-history-toggle">
+        <!-- <button @click="toggleSimulationHistory" class="simulation-history-toggle">
           <img src="../../../assets/calendar 1.png" alt="Calendar">
+        </button> -->
+        <button @click="fetchAvailableGroups" class="restore-button">
+          <i class="fas fa-redo"></i> <!-- Font Awesome icon for 'redo' or 'restore' -->
         </button>
       </div>
     </header>
@@ -25,7 +28,7 @@
         <span>Group Management</span>
       </h1>
 
-      <button @click="fetchAvailableGroups" class="modern-button">Restore Group</button>
+      <img src="../../../assets/graphimage.png" alt="Investment Allocation Image" class="allocation-image" />        
 
       <div class="groups">
         <div v-for="(group, index) in groups" :key="index" class="group">
@@ -33,41 +36,68 @@
             <h2>
               {{ group.name }}
               <span class="group-points">({{ group.points }} points)</span>
+            </h2>
+            <div class="group-actions">
               <button @click="editGroupName(index)" class="edit-group-btn">
-                <img src="../../../assets/pencil 1.png" alt="Pencil">
+                <img src="../../../assets/pencil 1.png" alt="Edit">
               </button>
               <button @click="removeGroup(index)" class="remove-group-btn">
                 <img src="../../../assets/remove.png" alt="Remove">
               </button>
-            </h2>
+            </div>
           </div>
           <div class="group-content">
+            <!-- Toggle for percentage mode -->
+            <!-- <div class="toggle-container">
+              <label>
+                <input
+                  type="checkbox"
+                  v-model="group.usePercentage"
+                  @change="resetInputs(index)"
+                />
+                Use Percentage (Default)
+              </label>
+            </div> -->
             <div class="inputs">
+              <!-- Iterate over assets -->
               <div class="input-row" v-for="(asset, key) in group.assets" :key="key">
                 <label :for="key">{{ key.charAt(0).toUpperCase() + key.slice(1) }}:</label>
                 <input 
+                  v-if="!group.usePercentage" 
                   type="number" 
                   v-model.number="group.assets[key]" 
                   :id="key" 
                   class="modern-input"
                   @input="updateSpendableAmount(index)"
-                >
+                />
+                <input 
+                  v-else 
+                  type="number" 
+                  v-model.number="group.percentages[key]" 
+                  :id="'percentage_' + key" 
+                  class="modern-input"
+                  @input="updatePercentages(index)"
+                  placeholder="Enter %"
+                />
               </div>
               <div class="total-value">
-                Total: £{{ getRemainingSpendableAmount(group).toFixed(2) }}
+                Remaining: {{ group.usePercentage ? getRemainingSpendableAmount(group) : "£" + getRemainingSpendableAmount(group).toFixed(2) }}
               </div>
-              <button @click="updateAllGroupValues(index)" class="modern-button enter-all-btn">Enter All</button>
-            </div>
-            <div class="pie-chart-container">
-                <canvas :id="'pieChart_' + index"></canvas>
             </div>
           </div>
+
         </div>
       </div>
 
+      <!-- Start Simulation button -->
       <button @click="startSimulation" class="modern-button">
         Start Simulation
         <img src="../../../assets/Arrow 17.png" alt="Icon" style="margin-left: 5px;">
+      </button>
+
+      <!-- Restore Group button moved to the bottom of main section -->
+      <button @click="fetchAvailableGroups" class="restore-button">
+        <i class="fas fa-redo"></i> Restore Group
       </button>
     </main>
 
@@ -101,11 +131,9 @@
 <script>
 import { useRouter } from 'vue-router';
 import { getFirestore, doc, collection, getDocs, writeBatch, setDoc, query } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import SimulationControls from './SimulationControls.vue';
 import SimulationHistory from './PastSimulations.vue';
-import { Chart, ArcElement, Tooltip, Legend, Title } from 'chart.js';
-
-Chart.register(ArcElement, Tooltip, Legend, Title);
 
 export default {
   name: 'QuizSimulation',
@@ -130,17 +158,26 @@ export default {
       showModal: false,
       newGroupName: '',
       currentSimulationIndex: null,
-      charts: [],
       isLoading: true,
+      uid: null,
     };
   },
   async created() {
-    await this.fetchTeamsFromFirebase();
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      this.uid = user.uid;
+      await this.fetchTeamsFromFirebase();
+    } else {
+      console.error('User is not logged in.');
+      this.$router.push({ name: 'Home' });
+    }
   },
   methods: {
     async fetchTeamsFromFirebase() {
       const db = getFirestore();
-      const teamsCollectionRef = collection(db, 'Quiz', 'Quiz Simulations', 'Teams');
+      const teamsCollectionRef = collection(db, this.uid, 'Quiz Simulations', 'Teams');
 
       try {
         const querySnapshot = await getDocs(teamsCollectionRef);
@@ -160,7 +197,15 @@ export default {
             commodities: 0,
             other: 0,
           },
-          allocatedFunds: 0, // Initialize allocatedFunds if needed
+          percentages: { // New percentages object for storing percentage allocations
+            equity: 0,
+            bonds: 0,
+            realestate: 0,
+            commodities: 0,
+            other: 0,
+          },
+          usePercentage: true, // Flag to determine mode
+          allocatedFunds: 0,
         }));
 
         this.groups.forEach((group, index) => {
@@ -173,39 +218,55 @@ export default {
         this.isLoading = false;
       }
     },
-    // async restoreGroup(groupName) {
-    //   const db = getFirestore();
-    //   const teamsCollectionRef = collection(db, 'Quiz', 'Quiz Simulations', 'Teams');
-      
-    //   try {
-    //     // Query Firestore for the specific group by name
-    //     const querySnapshot = await getDocs(teamsCollectionRef);
-    //     const teamDoc = querySnapshot.docs.find(doc => doc.data().name === groupName);
+    getRemainingSpendableAmount(group) {
+      if (group.usePercentage) {
+        // Calculate remaining percentage
+        const totalPercentage = Object.values(group.percentages).reduce((sum, value) => sum + parseFloat(value || 0), 0);
+        return (100 - totalPercentage).toFixed(2) + "%"; // Return percentage remaining
+      } else {
+        // Calculate remaining amount
+        const totalSpendable = this.getTotalSpendableAmount(group.points);
+        const totalAllocated = Object.values(group.assets).reduce((sum, value) => sum + parseFloat(value || 0), 0);
+        return totalSpendable - totalAllocated; // Return amount remaining
+      }
+    },
 
-    //     if (teamDoc) {
-    //       const points = teamDoc.data().points;
-    //       this.groups.push({
-    //         name: groupName,
-    //         points: points,
-    //         assets: {
-    //           equity: 0,
-    //           bonds: 0,
-    //           realestate: 0,
-    //           commodities: 0,
-    //           other: 0,
-    //         },
-    //         allocatedFunds: this.getTotalSpendableAmount(points)
-    //       });
-    //       this.$nextTick(() => this.renderPieChart(this.groups.length - 1)); // Render pie chart for the restored group
-    //       alert(`Group "${groupName}" has been restored with ${points} points.`);
-    //     } else {
-    //       alert(`Group "${groupName}" could not be found in Firestore.`);
-    //     }
-    //   } catch (error) {
-    //     console.error('Error restoring group from Firestore:', error);
-    //     alert('Failed to restore group. Please try again.');
-    //   }
-    // },
+    resetInputs(index) {
+      const group = this.groups[index];
+      const totalSpendable = this.getTotalSpendableAmount(group.points);
+
+      if (group.usePercentage) {
+        // Switch to percentage mode: Calculate percentages based on current amounts
+        Object.keys(group.assets).forEach((key) => {
+          group.percentages[key] = group.assets[key]
+            ? ((group.assets[key] / totalSpendable) * 100).toFixed(2)
+            : 0;
+        });
+      } else {
+        // Switch to exact value mode: Calculate amounts based on current percentages
+        Object.keys(group.percentages).forEach((key) => {
+          group.assets[key] = group.percentages[key]
+            ? ((group.percentages[key] / 100) * totalSpendable).toFixed(2)
+            : 0;
+        });
+      }
+      this.updateSpendableAmount(index);
+    },
+
+
+    // Update percentages dynamically
+    updatePercentages(index) {
+      const group = this.groups[index];
+      const totalSpendable = this.getTotalSpendableAmount(group.points);
+
+      // Dynamically calculate asset values from percentages
+      Object.keys(group.percentages).forEach((key) => {
+        const percentage = group.percentages[key];
+        group.assets[key] = ((percentage / 100) * totalSpendable).toFixed(2);
+      });
+
+      this.updateSpendableAmount(index);
+    },
     restoreGroupPrompt() {
       const groupName = prompt("Enter the name of the group you wish to restore:");
       if (groupName && groupName.trim() !== '') {
@@ -214,7 +275,7 @@ export default {
     },
     async fetchAvailableGroups() {
       const db = getFirestore();
-      const teamsCollectionRef = collection(db, 'Quiz', 'Quiz Simulations', 'Teams');
+      const teamsCollectionRef = collection(db, this.uid, 'Quiz Simulations', 'Teams');
       
       try {
         const querySnapshot = await getDocs(teamsCollectionRef);
@@ -261,7 +322,6 @@ export default {
             },
             allocatedFunds: this.getTotalSpendableAmount(points)
           });
-          this.$nextTick(() => this.renderPieChart(this.groups.length - 1)); // Render pie chart for the restored group
           alert(`Group "${groupName}" has been restored with ${points} points.`);
         } else {
           alert(`Group "${groupName}" could not be found in Firestore.`);
@@ -274,14 +334,14 @@ export default {
     getTotalSpendableAmount(points) {
       return 100000 + (points * 200);
     },
-    getRemainingSpendableAmount(group) {
-      const totalSpendable = this.getTotalSpendableAmount(group.points);
-      const totalAllocated = Object.values(group.assets).reduce((sum, value) => sum + value, 0);
-      return totalSpendable - totalAllocated;
-    },
+    // getRemainingSpendableAmount(group) {
+    //   const totalSpendable = this.getTotalSpendableAmount(group.points);
+    //   const totalAllocated = Object.values(group.assets).reduce((sum, value) => sum + value, 0);
+    //   return totalSpendable - totalAllocated;
+    // },
     updateSpendableAmount(index) {
       const group = this.groups[index];
-      this.groups[index].allocatedFunds = this.getRemainingSpendableAmount(group);
+      group.allocatedFunds = this.getRemainingSpendableAmount(group);
     },
     addGroup() {
       this.toggleModal();
@@ -290,25 +350,55 @@ export default {
       this.showModal = !this.showModal;
     },
     confirmAddGroup() {
-      if (this.newGroupName.trim()) {
-        this.groups.push({
-          name: this.newGroupName.trim(),
-          points: 0,
-          assets: {
-            equity: 0,
-            bonds: 0,
-            realestate: 0,
-            commodities: 0,
-            other: 0,
-          },
-          allocatedFunds: 0,
-        });
-        this.newGroupName = ''; 
-        this.toggleModal();
-      } else {
-        alert('Please enter a group name.');
+      if (!this.newGroupName.trim()) {
+        alert("Please enter a group name.");
+        return;
       }
+
+      const group = {
+        name: this.newGroupName.trim(),
+        points: 0,
+        assets: {
+          equity: 0,
+          bonds: 0,
+          realestate: 0,
+          commodities: 0,
+          other: 0,
+        },
+        percentages: {
+          equity: 0,
+          bonds: 0,
+          realestate: 0,
+          commodities: 0,
+          other: 0,
+        },
+        usePercentage: false,
+        allocatedFunds: 0,
+      };
+
+      // If using percentage mode, validate and calculate exact values
+      if (group.usePercentage) {
+        const totalPercentage = Object.values(group.percentages).reduce(
+          (sum, value) => sum + parseFloat(value || 0),
+          0
+        );
+
+        if (totalPercentage > 100) {
+          alert("Percentages cannot exceed 100%.");
+          return;
+        }
+
+        const totalSpendable = this.getTotalSpendableAmount(group.points);
+        Object.keys(group.percentages).forEach((key) => {
+          group.assets[key] = ((group.percentages[key] / 100) * totalSpendable).toFixed(2);
+        });
+      }
+
+      this.groups.push(group);
+      this.newGroupName = "";
+      this.toggleModal();
     },
+
     editGroupName(index) {
       const newName = prompt("Enter new group name:", this.groups[index].name);
       if (newName && newName.trim() !== '') {
@@ -317,10 +407,6 @@ export default {
     },
     removeGroup(index) {
       this.groups.splice(index, 1);
-      if (this.charts[index]) {
-        this.charts[index].destroy();
-        this.charts.splice(index, 1);
-      }
     },
     async fetchLatestSimulationIndex() {
       const db = getFirestore();
@@ -334,7 +420,7 @@ export default {
         return;
       }
       const db = getFirestore();
-      const querySnapshot = await getDocs(query(collection(db, 'Quiz', 'Asset Market Simulations', 'Simulations', `Simulation ${this.currentSimulationIndex}`, 'Groups')));
+      const querySnapshot = await getDocs(query(collection(db, this.uid, 'Asset Market Simulations', 'Simulations','Simulation 1', 'Groups')));
       const batch = writeBatch(db);
 
       querySnapshot.forEach((doc) => {
@@ -353,7 +439,7 @@ export default {
       
       try {
         await Promise.all(this.groups.map(group => {
-          const groupDocRef = doc(db, 'Quiz', 'Asset Market Simulations', 'Simulations', `Simulation ${this.currentSimulationIndex}`, 'Groups', group.name);
+          const groupDocRef = doc(db, this.uid, 'Asset Market Simulations', 'Simulations','Simulation 1', 'Groups', group.name);
           return setDoc(groupDocRef, group);
         }));
       } catch (err) {
@@ -382,94 +468,7 @@ export default {
       });
       this.updateSpendableAmount(index); // Update spendable amount display
     },
-    renderPieChart(index) {
-      const group = this.groups[index];
-      this.$nextTick(() => {
-        const canvasId = 'pieChart_' + index;
-        const canvas = document.getElementById(canvasId);
-        
-        if (!canvas) {
-          console.error(`Canvas element not found for index: ${index}`);
-          return;
-        }
 
-        const ctx = canvas.getContext('2d');
-
-        if (!ctx) {
-          console.error(`Unable to get canvas context for index: ${index}`);
-          return;
-        }
-
-        const data = {
-          labels: ['Equity', 'Bonds', 'Real Estate', 'Commodities', 'Other'],
-          datasets: [{
-            label: `${group.name} Asset Allocation`,
-            data: Object.values(group.assets),
-            backgroundColor: [
-              'rgba(114, 93, 255, 1)',
-              'rgba(230, 96, 131, 1)',
-              'rgba(255, 133, 76, 1)',
-              'rgba(30, 174, 174, 1)',
-              'rgba(54, 48, 82, 1)'
-            ],
-            borderColor: [
-              'rgba(114, 93, 255, 1)',
-              'rgba(230, 96, 131, 1)',
-              'rgba(255, 133, 76, 1)',
-              'rgba(30, 174, 174, 1)',
-              'rgba(54, 48, 82, 1)'
-            ],
-            borderWidth: 1
-          }]
-        };
-
-        if (this.charts[index]) {
-          this.charts[index].destroy();
-        }
-
-        this.charts[index] = new Chart(ctx, {
-          type: 'pie',
-          data: data,
-          options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-              legend: {
-                display: true,
-                position: 'bottom',
-                labels: {
-                  color: '#000',
-                  font: {
-                    size: 10,
-                    family: 'Helvetica'
-                  },
-                  boxWidth: 20,
-                  usePointStyle: true
-                }
-              }
-            },
-            animation: {
-              animateRotate: true,
-              animateScale: true,
-            },
-            cutout: '65%'
-          }
-        });
-
-        console.log(`Chart instance created for index: ${index}`);
-      });
-    },
-    updateAllGroupValues(index) {
-      const group = this.groups[index];
-      Object.keys(group.assets).forEach(field => {
-        // Ensure the value is retained and not reset to 0
-        group.assets[field] = parseFloat(group.assets[field]) || 0;
-      });
-      this.updatePieChart(index); // Update the pie chart after finalizing values
-    },
-    updatePieChart(index) {
-      this.renderPieChart(index);
-    },
     toggleCalculator() {
       this.router.push({ name: 'InvestmentCalculator' });
     },
@@ -486,11 +485,9 @@ export default {
     }
   },
   mounted() {
-    this.groups.forEach((group, index) => {
-      this.$nextTick(() => this.renderPieChart(index));
-    });
     console.log('Teams:', this.teams);
   }
+
 };
 </script>
 
@@ -542,6 +539,33 @@ body {
   transform: scale(1.2);
 }
 
+/* Position the Restore button at the bottom of the main section */
+.restore-button {
+  background-color: #082148;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1.4rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.restore-button i {
+  margin-right: 10px;
+}
+
+.restore-button:hover {
+  background-color: #0a015a;
+  transform: scale(1.05);
+}
+
+
+
 .header-content {
   display: flex;
   align-items: center;
@@ -579,25 +603,50 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  white-space: nowrap;
 }
 
 .group-header h2 {
   display: flex;
   align-items: center;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   margin: 0;
   font-size: 1.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1; /* Allows h2 to expand */
+  min-width: 0; /* Allows h2 to shrink when necessary */
 }
 
-.group-header h2 .group-points {
-  margin-left: 10px;
-  font-size: 1rem;
-  color: #cb1111;
+.group-header .group-points {
+  margin-left: 5px;
+  font-size: 0.6rem;
+  color: #777777;
 }
+
+.group-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.group-actions button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  transition: transform 0.3s ease;
+  flex-shrink: 0; /* Prevents buttons from shrinking */
+  width: 24px; /* Ensures consistent button size */
+  height: 24px;
+}
+
+.group-actions button img {
+  width: 100%;
+  height: 100%;
+}
+
+.group-actions button:hover {
+  transform: scale(1.1);
+}
+
 
 .group .group-content {
   display: flex;
@@ -638,12 +687,6 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.pie-chart-container {
-  width: 300px;
-  height: 200px;
-  margin: 10px auto 0;
-}
-
 .button, .modern-button {
   background-color: #082148;
   color: #ffffff;
@@ -653,6 +696,22 @@ body {
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s;
+}
+
+.restore-button {
+  background-color: #082148;
+  color: #ffffff;
+  border: none;
+  padding: 5px 10px;
+  font-size: 1.4rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.button:hover, .modern-button:hover {
+  background-color: #0a015a;
+  transform: scale(1.05);
 }
 
 .button:hover, .modern-button:hover {
@@ -758,6 +817,24 @@ body {
 
 .restore-button:hover {
   background-color: #0a015a;
+}
+
+.toggle-container {
+  margin-bottom: 10px;
+}
+
+.toggle-container label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.toggle-container input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
 }
 
 

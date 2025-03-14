@@ -21,7 +21,11 @@
     <!-- Task Description -->
     <div class="task-header">
       <div class="top-layer">
-        <h3>Task 3</h3>
+        <div class="points-section">
+          <h3>Challenge 3</h3>
+          <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
+          <p class="points">10 points</p>
+        </div>
         <div class="button-container">
           <!-- <button class="hint-button" @click="showHintModal = true">Hint?</button> -->
         </div>
@@ -76,7 +80,14 @@
           <h4>Liabilities</h4>
           <ul>
             <li>
-              <span class="asset-icon">🏠 <span class="clickable-term" @click="openGlossary('mortgage')"><strong>Mortgage</strong></span> (6%)</span>
+              <span class="asset-icon">🏠 
+                <span class="clickable-term"
+                      @mouseover="(event) => showHoverModal('Mortgage', 'A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.', event)"
+                      @mouseleave="hideHoverModal">
+                  <strong>Mortgage</strong>
+                </span> 
+                (6%)
+              </span>
               <span class="asset-value">£150,000</span>
             </li>
             <li>
@@ -93,19 +104,31 @@
       <!-- Question and Points Section -->
       <div class="question-section">
         <p>What should he do with the money?</p>
-        <div class="points-section">
-          <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
-          <p class="points">10 points</p>
-        </div>
       </div>
 
       <!-- Options List Before Submission -->
       <div class="options-list-before">
         <ol>
-          <li>A. Pay off some of his <span class="clickable-term" @click="openGlossary('mortgage')"><strong>Mortgage</strong></span> (house loan)</li>
+          <li>A. Pay off some of his
+            <span class="clickable-term"
+                  @mouseover="(event) => showHoverModal('Mortgage', 'A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.', event)"
+                  @mouseleave="hideHoverModal">
+              <strong>Mortgage</strong>
+            </span>
+            (house loan)
+          </li>
           <li>B. Pay off his car loan</li>
           <li>C. Spend the money on a training and self-development course</li>
-          <li>D. Invest in a new <span class="clickable-term" @click="openGlossary('cryptocurrency')"><strong>cryptocurrency</strong></span> coin his friend has just bought (Skibidicoin)</li>
+          <li>
+            <span class="option-text">D. Invest in a new 
+              <span class="clickable-term"
+                    @mouseover="(event) => showHoverModal('Cryptocurrency', 'A type of money you can use on a computer but can’t touch like coins or bills. It’s made using special computer codes, and you can use it to buy things online.', event)"
+                    @mouseleave="hideHoverModal">
+                <strong>cryptocurrency</strong>
+              </span> 
+              coin his friend has just bought (Skibidicoin)
+            </span>
+          </li>
           <li>E. Put the money in a savings account (paying 3% interest)</li>
         </ol>
       </div>
@@ -142,7 +165,14 @@
         <ol>
           <li @click="toggleDetails('A')">
             <div class="top">
-              <span class="option-text">A. Pay off some of his <span class="clickable-term" @click="openGlossary('mortgage')"><strong>Mortgage</strong></span> (house loan)</span>
+              <span class="option-text">A. Pay off some of his
+                <span class="clickable-term"
+                      @mouseover="(event) => showHoverModal('Mortgage', 'A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.', event)"
+                      @mouseleave="hideHoverModal">
+                  <strong>Mortgage</strong>
+                </span>
+                (house loan)
+              </span>
               <span class="points-display">
                 <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 7 points
               </span>
@@ -158,7 +188,14 @@
                 <tbody>
                   <tr>
                     <td>House £200,000</td>
-                    <td><span class="clickable-term" @click="openGlossary('mortgage')"><strong>Mortgage</strong></span> £150,000</td>
+                    <td>
+                      <span class="clickable-term"
+                        @mouseover="(event) => showHoverModal('Mortgage', 'A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.', event)"
+                        @mouseleave="hideHoverModal">
+                        <strong>Mortgage</strong>
+                      </span>
+                      £150,000
+                    </td>
                   </tr>
                   <tr>
                     <td>Car £50,000</td>
@@ -198,7 +235,12 @@
                 <tbody>
                   <tr>
                     <td>House £200,000</td>
-                    <td><span class="clickable-term" @click="openGlossary('mortgage')"><strong>Mortgage</strong></span> £150,000</td>
+                    <td>
+                      <span class="clickable-term"
+                        @mouseover="(event) => showHoverModal('Mortgage', 'A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.', event)"
+                        @mouseleave="hideHoverModal">
+                        <strong>Mortgage</strong>
+                      </span> £150,000</td>
                   </tr>
                   <tr>
                     <td>Car £50,000</td>
@@ -238,7 +280,13 @@
                 <tbody>
                   <tr>
                     <td>House £200,000</td>
-                    <td><span class="clickable-term" @click="openGlossary('mortgage')"><strong>Mortgage</strong></span> £150,000</td>
+                    <td>
+                      <span class="clickable-term"
+                        @mouseover="(event) => showHoverModal('Mortgage', 'A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.', event)"
+                        @mouseleave="hideHoverModal">
+                        <strong>Mortgage</strong>
+                      </span> £150,000
+                    </td>
                   </tr>
                   <tr>
                     <td>Car £50,000</td>
@@ -262,7 +310,12 @@
 
           <li @click="toggleDetails('D')">
             <div class="top">
-              <span class="option-text">D. Invest in a new <span class="clickable-term" @click="openGlossary('cryptocurrency')"><strong>cryptocurrency</strong></span> coin his friend has just bought (Skibidicoin)</span>
+              <span class="option-text">D. Invest in a new <span class="clickable-term"
+                @mouseover="(event) => showHoverModal('Cryptocurrency', 'A type of money you can use on a computer but can’t touch like coins or bills. It’s made using special computer codes, and you can use it to buy things online.', event)"
+                @mouseleave="hideHoverModal">
+                <strong>cryptocurrency</strong>
+              </span>
+            coin his friend has just bought (Skibidicoin)</span>
               <span class="points-display">
                 <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt"> 6 points
               </span>
@@ -278,7 +331,13 @@
                 <tbody>
                   <tr>
                     <td>House £200,000</td>
-                    <td><span class="clickable-term" @click="openGlossary('mortgage')"><strong>Mortgage</strong></span> £150,000</td>
+                    <td>
+                      <span class="clickable-term"
+                        @mouseover="(event) => showHoverModal('Mortgage', 'A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.', event)"
+                        @mouseleave="hideHoverModal">
+                        <strong>Mortgage</strong>
+                      </span> 
+                    £150,000</td>
                   </tr>
                   <tr>
                     <td>Car £50,000</td>
@@ -318,7 +377,13 @@
                 <tbody>
                   <tr>
                     <td>House £200,000</td>
-                    <td><span class="clickable-term" @click="openGlossary('mortgage')"><strong>Mortgage</strong></span> £150,000</td>
+                    <td>
+                      <span class="clickable-term"
+                          @mouseover="(event) => showHoverModal('Mortgage', 'A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.', event)"
+                          @mouseleave="hideHoverModal">
+                      <strong>Mortgage</strong>
+                    </span> 
+                    £150,000</td>
                   </tr>
                   <tr>
                     <td>Car £50,000</td>
@@ -351,9 +416,14 @@
           </div>
         </div>
       </div>
-
       <!-- Next Button -->
       <button class="next-button" @click="nextQuestion">Next</button>
+    </div>
+    <div v-if="hoverModal.show" 
+          class="hover-modal" 
+          :style="{ top: hoverModal.y + 'px', left: hoverModal.x + 'px' }">
+        <h3>{{ hoverModal.title }}</h3>
+        <p>{{ hoverModal.content }}</p>
     </div>
   </div>
 </template>
@@ -392,6 +462,13 @@ export default {
         C: false,
         D: false,
         E: false
+      },
+      hoverModal: {
+        show: false,
+        title: '',
+        content: '',
+        x: 0,
+        y: 0
       }
     };
   },
@@ -417,6 +494,18 @@ export default {
         this.glossaryTitle = 'Cryptocurrency';
         this.glossaryContent = 'A type of money you can use on a computer but can\'t touch like coins or bills. It’s made using special computer codes, and you can use it to buy things online.';
       }
+    },
+    showHoverModal(title, content, event) {
+      this.hoverModal.show = true;
+      this.hoverModal.title = title;
+      this.hoverModal.content = content;
+      this.hoverModal.x = event.clientX + 15; // Offset to prevent overlap
+      this.hoverModal.y = event.clientY + 15;
+    },
+    hideHoverModal() {
+      this.hoverModal.show = false;
+      this.hoverModal.title = '';
+      this.hoverModal.content = '';
     },
     toggleDetails(option) {
       this.detailsVisible[option] = !this.detailsVisible[option]; // Toggle the visibility of the selected option's details
@@ -537,12 +626,12 @@ export default {
 }
 
 .task-header h3 {
-  font-size: 1.5rem;
+  font-size: 2rem;
 }
 
 .task-header p {
   color: #555;
-  font-size: 1rem;
+  font-size: 1.4rem;
   margin-top: 5px;
   font-weight: bold;
 }
@@ -578,7 +667,7 @@ export default {
 }
 
 .glossary-header h2 {
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   color: #003F91;
 }
 
@@ -591,7 +680,7 @@ export default {
 }
 
 .glossary-content p {
-  font-size: 1rem;
+  font-size: 1.4rem;
   color: #555;
   margin-top: 5px;
   line-height: 1.5;
@@ -704,7 +793,7 @@ export default {
 }
 
 .card h4 {
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   margin-bottom: 10px;
   color: #000000B2;
 }
@@ -719,7 +808,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: #000000;
 }
 
@@ -747,7 +836,7 @@ export default {
 }
 
 .question-section p {
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   font-weight: bold;
 }
 
@@ -758,14 +847,14 @@ export default {
 }
 
 .points {
-  font-size: 1rem;
+  font-size: 1.3rem;
   color: #3b82f6;
-  font-size: 1.2rem;
   font-weight: bold;
 }
 
 .lightning-bolt {
-  width: 20px;
+  width: 40px;
+  height: 40px;
 }
 
 /* Before Submission: Options List */
@@ -784,7 +873,7 @@ export default {
   background-color: #B8CEF0;
   padding: 15px;
   border-radius: 15px;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   color: black;
   font-weight: bold;
   margin-bottom: 15px;
@@ -827,7 +916,7 @@ export default {
   background-color: #B8CEF0;
   padding: 15px;
   border-radius: 15px;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   color: black;
   font-weight: bold;
   align-items: center;
@@ -913,7 +1002,7 @@ export default {
   border-radius: 10px;
   border: 1px solid #ccc;
   background-color: #e0f2ff;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   text-align: center;
 }
 
@@ -924,7 +1013,7 @@ export default {
 }
 
 .points-breakdown {
-  font-size: 1rem;
+  font-size: 1.4rem;
   margin-bottom: 15px;
 }
 
@@ -997,4 +1086,31 @@ export default {
   cursor: pointer;
   text-decoration: underline;
 }
+
+.hover-modal {
+  position: fixed;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  max-width: 300px;
+  z-index: 1000;
+  pointer-events: none; /* Prevent blocking other interactions */
+  transition: opacity 0.3s ease-in-out;
+  font-family: Arial, sans-serif;
+}
+
+.hover-modal h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.hover-modal p {
+  font-size: 1.2rem;
+  color: #555;
+  margin: 0;
+}
+
 </style>

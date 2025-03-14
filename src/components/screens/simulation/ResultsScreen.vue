@@ -46,12 +46,14 @@
 
 <script>
 import { getFirestore, doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import Chart from 'chart.js/auto';
 
 export default {
   name: 'ResultsScreen',
   data() {
     return {
+      uid: null, // Store the user's UID
       latestSimulationIndex: null,
       finalResults: [],
       quarterResults: [],
@@ -62,10 +64,19 @@ export default {
     };
   },
   async mounted() {
-    this.latestSimulationIndex = await this.fetchLatestSimulationIndex();
-    await Promise.all([this.fetchFinalResults(), this.fetchQuarterlyResults()]);
-    this.processResults(); // Perform calculations and chart generation
-    this.dataReady = true; // Set flag to true after data is processed
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      this.uid = user.uid; // Store the UID of the logged-in user
+      this.latestSimulationIndex = await this.fetchLatestSimulationIndex();
+      await Promise.all([this.fetchFinalResults(), this.fetchQuarterlyResults()]);
+      this.processResults(); // Perform calculations and chart generation
+      this.dataReady = true; // Set flag to true after data is processed
+    } else {
+      console.error('User is not logged in.');
+      this.$router.push({ name: 'Home' }); // Redirect to home if not authenticated
+    }
   },
   computed: {
     rankedResults() {
@@ -101,13 +112,13 @@ export default {
   methods: {
     async fetchLatestSimulationIndex() {
       const db = getFirestore();
-      const simulationsRef = collection(db, 'Quiz', 'Asset Market Simulations', 'Simulations');
+      const simulationsRef = collection(db, this.uid, 'Asset Market Simulations', 'Simulations');
       const querySnapshot = await getDocs(simulationsRef);
       return querySnapshot.size;
     },
     async fetchFinalResults() {
       const db = getFirestore();
-      const docRef = doc(db, 'Quiz', 'Asset Market Simulations', 'Simulations', `Simulation ${this.latestSimulationIndex}`, 'Results', 'Final');
+      const docRef = doc(db, this.uid, 'Asset Market Simulations', 'Simulations', `Simulation 1`, 'Results', 'Final');
       try {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -125,7 +136,7 @@ export default {
     },
     async fetchQuarterlyResults() {
       const db = getFirestore();
-      const docRef = doc(db, 'Quiz', 'Asset Market Simulations', 'Simulations', `Simulation ${this.latestSimulationIndex}`, 'Results', 'Quarters');
+      const docRef = doc(db, this.uid, 'Asset Market Simulations', 'Simulations', `Simulation 1`, 'Results', 'Quarters');
       try {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -139,20 +150,35 @@ export default {
       }
     },
     processResults() {
-      const numberOfQuarters = this.quarterResults[0].bonds.length;
+
+      if (!this.quarterResults.length) {
+        console.error('processResults: No quarter results available.');
+        return;
+      }
+
+      const firstQuarter = this.quarterResults[0];
+        if (!firstQuarter || !firstQuarter.bonds) {
+          console.error('processResults: Missing bonds data in the first quarter.');
+          return;
+        }
+      // const numberOfQuarters = this.quarterResults[0].bonds.length;
+      const numberOfQuarters = firstQuarter.bonds.length;
       this.finalResults = this.finalResults
         .map((result, index) => {
           const initialTotalWorth = this.getInitialTotalWorth(index);
           const finalTotalWorth = [
-            result.equity,
-            result.bonds,
-            result.realestate,
-            result.commodities,
-            result.other,
+            result.equity || 0,
+            result.bonds || 0,
+            result.realestate || 0,
+            result.commodities || 0,
+            result.other || 0,
           ].reduce((acc, value) => acc + Number(value), 0);
+
           const totalGains = finalTotalWorth - initialTotalWorth;
           const roi = ((finalTotalWorth - initialTotalWorth) / initialTotalWorth) * 100;
-          const annualizedReturn = (Math.pow(finalTotalWorth / initialTotalWorth, 4 / numberOfQuarters) - 1) * 100;
+          const annualizedReturn = numberOfQuarters
+            ? (Math.pow(finalTotalWorth / initialTotalWorth, 4 / numberOfQuarters) - 1) * 100
+            : 0;
 
           const mostGainsAsset = this.calculateMostGainsAsset(index);
 
@@ -176,6 +202,10 @@ export default {
       }
 
       const initialAssets = this.quarterResults[0];
+        if (!initialAssets) {
+        console.error('getInitialTotalWorth: First quarter data is missing.');
+        return 0;
+      }
       const assetTypes = ['equity', 'bonds', 'realestate', 'commodities', 'other'];
 
       const initialTotalWorth = assetTypes.reduce((sum, assetType) => {

@@ -20,50 +20,26 @@
     <!-- Task Description -->
     <div class="task-header">
       <div class="header-content">
-        <h3>Task 2</h3>
+        <div class="points-section">
+          <h3>Challenge 2</h3>
+          <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
+          <p class="points">3 points</p>
+        </div>
         <div class="button-container">
           <button class="hint-button" @click="showHintModal = true">Hint?</button>
         </div>
       </div>
       <p>
         Ben earns £60,000 a year. 
-        <span class="clickable-term" @click="openGlossary('incomeTax')"><strong>Income Tax</strong></span>
-        automatically comes out of his paycheck before he gets the money.</p>
+        <span 
+          class="clickable-term" 
+          @mouseover="(event) => showHoverModal('Income Tax', 'A portion of the money that people earn from their jobs or other places, which they need to give to the government. This money helps pay for things like schools, roads, and hospitals.', event)" 
+          @mouseleave="hideHoverModal">
+          <strong>Income Tax</strong>
+        </span>
+        automatically comes out of his paycheck before he gets the money.
+      </p>
     </div>
-
-     <!-- Glossary Sidebar -->
-     <!-- <div v-if="showGlossary" class="glossary-sidebar">
-      <div class="glossary-header">
-        <h2>📖 Glossary</h2>
-        <button class="close-button" @click="showGlossary = false">X</button>
-      </div>
-      <div class="glossary-content"> -->
-        <!-- <h3>Assets</h3>
-        <p>Things you own that are worth money. For example, if you have a bicycle, some books, or a little money in a piggy bank, those are all your assets.</p>
-        <h3>Liabilities</h3>
-        <p>Money you owe to someone else. If you borrowed money from your friend to buy a new game and you have to give it back, that money is a liability.</p> -->
-        <!-- <h3>Income Tax</h3>
-        <p>A portion of the money that people earn from their jobs or other places, which they need to give to the government. This money helps pay for things like schools, roads, and hospitals.</p>
-        <h3>Tax Rates</h3>
-        <p>This tells you how much income tax you need to pay. It’s like a rule that says how much money you give to the government based on how much money you make.</p> -->
-        <!-- <h3>Mortgage</h3>
-        <p>A special kind of loan that people use to buy a house. They borrow money from a bank and pay it back every month for many years. While they are paying it back, they can live in the house.</p>
-        <h3>Cryptocurrency</h3>
-        <p>A type of money you can use on a computer but can't touch like coins or bills. It’s made using special computer codes and you can use it to buy things online.</p>
-        <h3>Stocks Fund Portfolio</h3>
-        <p>A basket of different companies that are all put together. When you buy a part of the basket, you own a small piece of all the companies in it. This helps spread the risk because if one company doesn't do well, others in the basket might still grow!</p>
-        <h3>S&P 500</h3>
-        <p>A list of the 500 biggest and most important companies in America. If you invest in the S&P 500, you’re buying a little piece of each of those 500 companies. </p>
-        <h3>Interest</h3>
-        <p>If you save your money in a bank, the bank pays you extra money for letting them keep it there. This extra money is called interest.</p>
-        <h3>Compound Interest</h3>
-        <p>This is when you get interest on both the money you saved and the extra money (interest) you earned before. It's like your money making more money because the interest starts earning interest too!</p>
-        <h3>Annual Return</h3>
-        <p>This is how much money you make or lose from an investment in a year. It tells you how good or bad the investment did.</p>
-        <h3>Credit Rating</h3>
-        <p>A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.</p> -->
-      <!-- </div>
-    </div> -->
 
     <!-- Glossary Sidebar -->
     <div v-if="showGlossary" class="glossary-sidebar">
@@ -80,7 +56,7 @@
     <div v-if="showHintModal" class="hint-modal-overlay">
       <div class="hint-modal">
         <h3>Hint</h3>
-        <p>The first £10,000 Ben earns doesn't get taxed at all. The next money he makes from £10,000 - £40,000 (which is £30,000) gets taxed at 20%. The remaining money he makes after $40,000 gets taxed at 40%.</p>
+        <p>The first £10,000 Ben earns doesn't get taxed at all. The next money he makes from £10,000 - £40,000 (which is £30,000) gets taxed at 20%. The remaining money he makes after £40,000 gets taxed at 40%.</p>
         <p>Calculate the total tax he pays and subtract it from his earnings.</p>
         <button @click="showHintModal = false" class="close-modal-button">Close</button>
       </div>
@@ -92,7 +68,14 @@
         <thead>
           <tr>
             <th>Income</th>
-            <th><span class="clickable-term" @click="openGlossary('taxRate')"><strong>Tax Rate</strong></span></th>
+            <th>
+              <span 
+                class="clickable-term" 
+                @mouseover="(event) => showHoverModal('Tax Rate', 'This tells you how much income tax you need to pay. It’s like a rule that says how much money you give to the government based on how much money you make.', event)" 
+                @mouseleave="hideHoverModal">
+                <strong>Tax Rate</strong>
+              </span>
+            </th>
             <th>Info</th>
           </tr>
         </thead>
@@ -116,15 +99,17 @@
       </table>
     </div>
 
+    <!-- Hover Modal -->
+    <div v-if="hoverModal.show" class="hover-modal" :style="{ top: hoverModal.y + 'px', left: hoverModal.x + 'px' }">
+      <h3>{{ hoverModal.title }}</h3>
+      <p>{{ hoverModal.content }}</p>
+    </div>
+
     <!-- Conditionally display answer options or result section -->
     <div v-if="!showResults">
       <!-- Question and Points Section -->
       <div class="question-section">
         <p>How much money does he get in his account after tax?</p>
-        <div class="points-section">
-          <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
-          <p class="points">3 points</p>
-        </div>
       </div>
 
       <!-- Multiple Choice Options -->
@@ -246,6 +231,13 @@ export default {
       timerStarted: false,
       glossaryTitle: '',
       glossaryContent: '',
+      hoverModal: {
+        show: false,
+        title: "",
+        content: "",
+        x: 0,
+        y: 0,
+      },
     };
   },
   computed: {
@@ -260,6 +252,21 @@ export default {
     }
   },
   methods: {
+    showHoverModal(title, content, event) {
+      console.log("Showing modal with:", { title, content, event });
+      if (!event) {
+        console.error("Event is missing for hover modal.");
+        return;
+      }
+      this.hoverModal.show = true;
+      this.hoverModal.title = title;
+      this.hoverModal.content = content;
+      this.hoverModal.x = event.clientX + 15;
+      this.hoverModal.y = event.clientY + 15;
+    },
+    hideHoverModal() {
+      this.hoverModal.show = false;
+    },
     openGlossary(term) {
       this.showGlossary = true;
 
@@ -388,8 +395,31 @@ export default {
   color: #2563eb;
 }
 
+/* Hover Modal */
+.hover-modal {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 15px;
+  z-index: 1000;
+  width: 300px;
+}
+
+.hover-modal h3 {
+  font-size: 1.4rem;
+  margin-bottom: 5px;
+  color: #003f91;
+}
+
+.hover-modal p {
+  font-size: 1.2rem;
+  color: #333;
+}
+
 .task-header h3 {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   color: #000;
   flex-grow: 1;
   text-align: start;
@@ -397,7 +427,7 @@ export default {
 
 .task-header p {
   color: #555;
-  font-size: 1rem;
+  font-size: 1.3rem;
   margin-top: 5px;
 }
 
@@ -412,7 +442,7 @@ export default {
   border: 1px solid #e0e0e0;
   color: #003F91;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   padding: 8px 16px;
   border-radius: 20px;
   cursor: pointer;
@@ -442,13 +472,13 @@ export default {
 }
 
 .hint-modal h3 {
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   margin-bottom: 10px;
   color: black;
 }
 
 .hint-modal p {
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   margin-bottom: 20px;
   color: #333;
 }
@@ -489,20 +519,20 @@ export default {
 }
 
 .glossary-header h2 {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   color: #003F91;
 }
 
 .glossary-header .close-button {
   background-color: transparent;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   cursor: pointer;
   color: #003F91;
 }
 
 .glossary-content p {
-  font-size: 1rem;
+  font-size: 1.6rem;
   color: #555;
   margin-top: 5px;
   line-height: 1.5;
@@ -580,7 +610,7 @@ export default {
 }
 
 .question-section p {
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   font-weight: bold;
 }
 
@@ -591,14 +621,14 @@ export default {
 }
 
 .points {
-  font-size: 1rem;
+  font-size: 1.3rem;
   color: #3b82f6;
-  font-size: 1.2rem;
   font-weight: bold;
 }
 
 .lightning-bolt {
-  width: 20px;
+  width: 40px;
+  height: 40px
 }
 
 /* Multiple Choice Section */
@@ -616,7 +646,7 @@ export default {
   border-radius: 25px;
   color: black;
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 1.4rem;
 }
 
 .choice-button:hover {
@@ -660,7 +690,7 @@ export default {
   border-radius: 10px;
   border: 1px solid #ccc;
   background-color: #e0f2ff;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   text-align: center;
 }
 
@@ -672,7 +702,7 @@ export default {
 
 .correct-answer {
   display: inline-block;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: bold;
   color: #000; /* Green color for correct answer */
   margin: 20px;
@@ -687,7 +717,7 @@ export default {
 .detailed-answer-toggle {
   cursor: pointer;
   color: #3b82f6;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
 }
 
 .expanded-answer {
@@ -758,7 +788,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   font-weight: bold;
 }
 
@@ -783,7 +813,7 @@ export default {
   border: none;
   padding: 10px;
   border-radius: 30px;
-  font-size: 1rem;
+  font-size: 1.5rem;
   cursor: pointer;
   margin-top: 20px;
 }

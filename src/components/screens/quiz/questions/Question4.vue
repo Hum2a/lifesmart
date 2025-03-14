@@ -20,15 +20,29 @@
     <!-- Task Description -->
     <div class="task-header">
       <div class="top-layer">
-        <h3>Task 4</h3>
+        <div class="points-section">
+          <h3>Challenge 4</h3>
+          <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
+          <p class="points">2 points</p>
+        </div>
         <div class="button-container">
           <!-- <button class="hint-button" @click="showHintModal = true">Hint?</button> -->
         </div>
       </div>
       <div class="task-header-question">
         <p>
-          Ben decides to use £500 a month of his savings and invest in a <span class="clickable-term" @click="openGlossary('stocksFundPortfolio')"><strong>stocks fund portfolio</strong></span>.
-          He chooses the ‘<span class="clickable-term" @click="openGlossary('sAndP500')"><strong>S&P500 Fund</strong></span>’ because it is predicted to return 8%.
+          Ben decides to use £500 a month of his savings and invest in a
+          <span class="clickable-term"
+                @mouseover="(event) => showHoverModal('Stocks Fund Portfolio', 'A basket of different companies that are all put together. When you buy a part of the basket, you own a small piece of all the companies in it. This helps spread the risk because if one company doesn’t do well, others in the basket might still grow!', event)"
+                @mouseleave="hideHoverModal">
+            <strong>stocks fund portfolio</strong>
+          </span>.
+          He chooses the ‘
+          <span class="clickable-term"
+                @mouseover="(event) => showHoverModal('S&P 500', 'A list of the 500 biggest and most important companies in America. If you invest in the S&P 500, you’re buying a little piece of each of those 500 companies.', event)"
+                @mouseleave="hideHoverModal">
+            <strong>S&P500 Fund</strong>
+          </span>’ because it is predicted to return 8%.
         </p>
         <img src="../../../../assets/moneybars.png" alt="Task 4 Image" class="task-image">
       </div>
@@ -57,12 +71,13 @@
     <!-- Question and Points Section -->
     <div class="question-section">
       <p class="question-text">
-        If he continues to put in £500 a month and the fund has a return of 8% <span class="clickable-term" @click="openGlossary('annually')"><strong>annually</strong></span>, approximately how much money will he have after 10 years?
+        If he continues to put in £500 a month and the fund has a return of 8%
+        <span class="clickable-term"
+              @mouseover="(event) => showHoverModal('Annually', 'The return rate is calculated based on a yearly period. For example, an 8% annual return means an 8% increase over one year.', event)"
+              @mouseleave="hideHoverModal">
+          <strong>annually</strong>
+        </span>, approximately how much money will he have after 10 years?
       </p>
-      <div class="points-section">
-          <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
-          <p class="points">2 points</p>
-        </div>
     </div>
 
     <!-- Multiple Choice Options -->
@@ -120,6 +135,12 @@
       <button class="next-button" @click="nextQuestion">Next</button>
     </div>
 
+    <div v-if="hoverModal.show" 
+        class="hover-modal" 
+        :style="{ top: hoverModal.y + 'px', left: hoverModal.x + 'px' }">
+      <h3>{{ hoverModal.title }}</h3>
+      <p>{{ hoverModal.content }}</p>
+    </div>
   </div>
 </template>
 
@@ -148,6 +169,13 @@ export default {
       glossaryTitle: '',
       glossaryContent: '',
       showHintModal: false,
+      hoverModal: {
+        show: false,
+        title: '',
+        content: '',
+        x: 0,
+        y: 0
+      },
     };
   },
   computed: {
@@ -178,6 +206,18 @@ export default {
     },
     selectAnswer(answer) {
       this.selectedAnswer = answer;
+    },
+    showHoverModal(title, content, event) {
+      this.hoverModal.show = true;
+      this.hoverModal.title = title;
+      this.hoverModal.content = content;
+      this.hoverModal.x = event.clientX + 15; // Offset for better positioning
+      this.hoverModal.y = event.clientY + 15;
+    },
+    hideHoverModal() {
+      this.hoverModal.show = false;
+      this.hoverModal.title = '';
+      this.hoverModal.content = '';
     },
     submitAnswers() {
       this.showResults = true; // Set the showResults flag to true to reveal the correct answer and the comparison of each team's answer
@@ -328,12 +368,12 @@ export default {
 }
 
 .task-header h3 {
-  font-size: 1.5rem;
+  font-size: 2rem;
 }
 
 .task-header p {
   color: #555;
-  font-size: 1rem;
+  font-size: 1.3rem;
   margin-top: 5px;
   font-weight: bold;
 }
@@ -365,7 +405,7 @@ export default {
   border: 1px solid #e0e0e0;
   color: #003F91;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   padding: 8px 16px;
   border-radius: 20px;
   cursor: pointer;
@@ -437,7 +477,7 @@ export default {
 }
 
 .question-section p {
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   font-weight: bold;
 }
 
@@ -453,14 +493,14 @@ export default {
 }
 
 .points {
-  font-size: 1rem;
+  font-size: 1.3rem;
   color: #3b82f6;
-  font-size: 1.2rem;
   font-weight: bold;
 }
 
 .lightning-bolt {
-  width: 20px;
+  width: 40px;
+  height: 40px;
 }
 
 /* Multiple Choice Section */
@@ -478,7 +518,7 @@ export default {
   border-radius: 25px;
   color: black;
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 1.3rem;
 }
 
 .choice-button:hover {
@@ -521,7 +561,7 @@ export default {
   border-radius: 10px;
   border: 1px solid #ccc;
   background-color: #e0f2ff;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   text-align: center;
 }
 
@@ -533,7 +573,7 @@ export default {
 
 .correct-answer {
   display: inline-block;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: bold;
   color: #000; /* Green color for correct answer */
   margin: 20px;
@@ -546,18 +586,18 @@ export default {
 
 .toggle-detailed-answer {
   color: black;
-  font-size: 16px;
+  font-size: 24px;
   font-weight: bold;
   cursor: pointer;
   transition: 0.2s ease;
 }
 
 .toggle-detailed-answer:hover {
-  font-size: 17px;
+  font-size: 25px;
 }
 
 .toggle-detailed-answer::after {
-  font-size: 15px;
+  font-size: 23px;
 }
 
 .team-answer-comparison {
@@ -574,7 +614,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: bold;
 }
 
@@ -597,7 +637,7 @@ export default {
   border: none;
   padding: 10px;
   border-radius: 30px;
-  font-size: 1rem;
+  font-size: 1.4rem;
   cursor: pointer;
   margin-top: 20px;
 }
@@ -621,4 +661,30 @@ export default {
 .clickable-term:hover {
   color: #2563eb;
 }
+.hover-modal {
+  position: fixed;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  max-width: 300px;
+  z-index: 1000;
+  pointer-events: none; /* Prevent blocking other interactions */
+  transition: opacity 0.3s ease-in-out;
+  font-family: Arial, sans-serif;
+}
+
+.hover-modal h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.hover-modal p {
+  font-size: 1.2rem;
+  color: #555;
+  margin: 0;
+}
+
 </style>

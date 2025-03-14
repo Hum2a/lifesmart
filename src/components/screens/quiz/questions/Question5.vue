@@ -20,13 +20,24 @@
     <!-- Task Description -->
     <div class="task-header">
       <div class="top-layer">
-        <h3>Task 5</h3>
+        <div class="points-section">
+          <h3>Challenge 5</h3>
+          <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
+          <p class="points">5 points</p>
+        </div>
         <div class="button-container">
           <!-- <button class="hint-button" @click="showHintModal = true">Hint?</button> -->
         </div>
       </div>
       <div>
-        <p>Ben decides he wants to get another loan in the future, so he would like to improve his <span class="clickable-term" @click="openGlossary('creditRating')"><strong>credit rating</strong></span>.</p>
+        <p>
+          Ben decides he wants to get another loan in the future, so he would like to improve his
+          <span class="hoverable-term"
+                @mouseover="(event) => showHoverModal('Credit Rating', 'A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.', event)"
+                @mouseleave="hideHoverModal">
+            <strong>credit rating</strong>
+          </span>.
+        </p>
         <img src="../../../../assets/moneyhandshake.png" alt="Task 5 Image" class="task-image">
       </div>
     </div>
@@ -53,11 +64,14 @@
 
     <!-- Question Section -->
     <div class="question-section">
-      <p>Which of the following things improve your <span class="clickable-term" @click="openGlossary('creditRating')"><strong>credit rating</strong></span>?</p>
-      <div class="points-section">
-        <img src="../../../../assets/Lightning Bolt.png" alt="Lightning Bolt" class="lightning-bolt">
-        <p class="points">5 points</p>
-      </div>
+      <p class="question-section">
+        Which of the following things improve your
+        <span class="hoverable-term"
+              @mouseover="(event) => showHoverModal('Credit Rating', 'A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.', event)"
+              @mouseleave="hideHoverModal">
+          <strong>credit rating</strong>
+        </span>?
+      </p>
     </div>
 
     <!-- Conditionally render either the answer options or the results section -->
@@ -112,6 +126,12 @@
       <!-- Next Button -->
       <button class="next-button" @click="nextQuestion">Next</button>
     </div>
+        <div v-if="hoverModal.show"
+        class="hover-modal"
+        :style="{ top: hoverModal.y + 'px', left: hoverModal.x + 'px' }">
+      <h3>{{ hoverModal.title }}</h3>
+      <p>{{ hoverModal.content }}</p>
+    </div>
   </div>
 </template>
 
@@ -145,7 +165,14 @@ export default {
       glossaryTitle: '',
       glossaryContent: '',
       showHintModal: false,
-      timerStarted: false // Timer is initially not started
+      timerStarted: false, // Timer is initially not started
+      hoverModal: {
+        show: false,
+        title: '',
+        content: '',
+        x: 0,
+        y: 0
+      },
     };
   },
   computed: {
@@ -167,6 +194,18 @@ export default {
         this.glossaryTitle = 'Credit Rating';
         this.glossaryContent = 'A score that everyone has, that tells banks how good you are at paying back money. If you have a high score, banks think you’re good at paying back and are more likely to lend you money.';
       }
+    },
+    showHoverModal(title, content, event) {
+      this.hoverModal.show = true;
+      this.hoverModal.title = title;
+      this.hoverModal.content = content;
+      this.hoverModal.x = event.clientX + 15; // Offset for better positioning
+      this.hoverModal.y = event.clientY + 15;
+    },
+    hideHoverModal() {
+      this.hoverModal.show = false;
+      this.hoverModal.title = '';
+      this.hoverModal.content = '';
     },
     toggleTeamAnswer(teamIndex, optionIndex) {
       const answers = this.teamAnswers[teamIndex];
@@ -420,13 +459,13 @@ export default {
 }
 
 .task-header h3 {
-  font-size: 1.5rem;
+  font-size: 2rem;
   color: black;
 }
 
 .task-header p {
   color: #555;
-  font-size: 1rem;
+  font-size: 1.4rem;
 }
 
 .task-image {
@@ -441,7 +480,7 @@ export default {
 }
 
 .question-section p {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   color: black;
 }
@@ -454,14 +493,14 @@ export default {
 }
 
 .points {
-  font-size: 1rem;
+  font-size: 1.4rem;
   color: #3b82f6;
-  font-size: 1.2rem;
   font-weight: bold;
 }
 
 .lightning-bolt {
-  width: 20px;
+  width: 40px;
+  height: 40px;
 }
 
 
@@ -477,7 +516,7 @@ export default {
   margin-bottom: 10px;
   border-radius: 5px;
   text-align: left;
-  font-size: 1rem;
+  font-size: 1.4rem;
 }
 
 .correct {
@@ -498,7 +537,7 @@ export default {
 }
 
 .team-selection h4 {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   color: #333;
   margin-bottom: 10px;
 }
@@ -514,7 +553,7 @@ export default {
   border-radius: 50%;
   border: none;
   background-color: #e0e0e0;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   cursor: pointer;
 }
 
@@ -562,7 +601,7 @@ export default {
 }
 
 .score {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: bold;
 }
 
@@ -575,7 +614,7 @@ export default {
   border: none;
   padding: 10px;
   border-radius: 30px;
-  font-size: 1rem;
+  font-size: 1.4rem;
   cursor: pointer;
   margin-top: 20px;
 }
@@ -595,4 +634,41 @@ export default {
     transform: translateY(0);
   }
 }
+
+.hover-modal {
+  position: fixed;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  max-width: 300px;
+  z-index: 1000;
+  pointer-events: none; /* Prevent blocking other interactions */
+  transition: opacity 0.3s ease-in-out;
+  font-family: Arial, sans-serif;
+}
+
+.hover-modal h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.hover-modal p {
+  font-size: 1.2rem;
+  color: #555;
+  margin: 0;
+}
+
+.hoverable-term {
+  color: #3b82f6;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.hoverable-term:hover {
+  color: #2563eb;
+}
+
 </style>

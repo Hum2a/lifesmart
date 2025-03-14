@@ -1,5 +1,5 @@
 <template>
-  <div class="home-screen">
+  <div class="auth-screen">
     <!-- Header -->
     <header class="header">
       <h1 class="header-title">Life Smart</h1>
@@ -7,65 +7,133 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <div class="button-container">
-        <button @click="startQuiz" class="button start-quiz-button">Start Quiz</button>
-        <button @click="startSimulation" class="button start-simulation-button">
-          Start Simulation Without Quiz
-        </button>
+      <div class="button-container" v-if="!showForm">
+        <button @click="showSignInForm" class="button sign-in-button">Sign In</button>
+        <button @click="showRegisterForm" class="button register-button">Register</button>
       </div>
+
+      <form v-if="showForm" @submit.prevent="handleFormSubmit" class="auth-form">
+        <h2>{{ isSignInMode ? 'Sign In' : 'Register' }}</h2>
+        <input
+          type="email"
+          v-model="email"
+          placeholder="Enter your email"
+          required
+          class="form-input"
+        />
+        <input
+          type="password"
+          v-model="password"
+          placeholder="Enter your password"
+          required
+          class="form-input"
+        />
+        <input
+          v-if="!isSignInMode"
+          type="password"
+          v-model="confirmPassword"
+          placeholder="Confirm your password"
+          required
+          class="form-input"
+        />
+        <button type="submit" class="form-button">
+          {{ isSignInMode ? 'Sign In' : 'Register' }}
+        </button>
+        <button type="button" @click="closeForm" class="close-form-button">
+          Cancel
+        </button>
+      </form>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
-      <p class="footer-text">© 2024 Our App. All rights reserved.</p>
+      <p class="footer-text">© 2024 Life Smart. All rights reserved.</p>
     </footer>
   </div>
 </template>
 
-  
 <script>
-import { useRouter } from 'vue-router';
+import { firebaseAuth } from "@/firebase/initFirebase"; // Import Firebase Auth instance
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { useRouter } from "vue-router"; // Import Vue Router
 
 export default {
-  name: 'HomeScreen',
-  setup() {
-    const router = useRouter();
-
-    const startQuiz = () => {
-      router.push({ name: 'QuizLanding' }); // Replace with actual route
-    };
-
-    const startSimulation = () => {
-      router.push({ name: 'Simulation' }); // Replace with actual route
-    };
-
+  name: "AuthScreen",
+  data() {
     return {
-      startQuiz,
-      startSimulation,
+      showForm: false,
+      isSignInMode: true, // Determines if the form is for Sign-In or Register
+      email: "",
+      password: "",
+      confirmPassword: "",
     };
+  },
+  setup() {
+    const router = useRouter(); // Setup Vue Router
+    return { router };
+  },
+  methods: {
+    showSignInForm() {
+      this.isSignInMode = true;
+      this.showForm = true;
+    },
+    showRegisterForm() {
+      this.isSignInMode = false;
+      this.showForm = true;
+    },
+    closeForm() {
+      this.showForm = false;
+      this.email = "";
+      this.password = "";
+      this.confirmPassword = "";
+    },
+    async handleFormSubmit() {
+      if (!this.isSignInMode && this.password !== this.confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      try {
+        if (this.isSignInMode) {
+          // Handle Sign-In
+          const userCredential = await signInWithEmailAndPassword(firebaseAuth, this.email, this.password);
+          console.log("Signed in user:", userCredential.user);
+          alert("Sign-In successful!");
+          this.router.push({ name: "QuizLanding" }); // Redirect to QuizLanding
+        } else {
+          // Handle Register
+          const userCredential = await createUserWithEmailAndPassword(firebaseAuth, this.email, this.password);
+          console.log("Registered user:", userCredential.user);
+          alert("Registration successful!");
+          this.router.push({ name: "QuizLanding" }); // Redirect to QuizLanding after registration
+        }
+        this.closeForm();
+      } catch (error) {
+        console.error("Authentication error:", error.message);
+        alert(error.message);
+      }
+    },
   },
 };
 </script>
 
-  
 <style scoped>
-/* Home Screen Layout */
-.home-screen {
+/* Same CSS as before */
+.auth-screen {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: radial-gradient(circle, rgba(58,117,196,1) 0%, rgba(25,37,71,1) 100%); /* Fancy Gradient Background */
+  background: radial-gradient(circle, rgba(58, 117, 196, 1) 0%, rgba(25, 37, 71, 1) 100%);
   color: #ffffff;
-  font-family: 'Poppins', sans-serif; /* Modern Font */
+  font-family: "Poppins", sans-serif;
   position: relative;
   overflow: hidden;
 }
 
-/* Header */
 .header {
   padding: 20px;
   text-align: center;
-  backdrop-filter: blur(5px); /* Glassmorphism Effect */
+  backdrop-filter: blur(5px);
 }
 
 .header-title {
@@ -77,7 +145,6 @@ export default {
   font-weight: 700;
 }
 
-/* Main Content */
 .main-content {
   flex-grow: 1;
   display: flex;
@@ -90,7 +157,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  z-index: 1;
 }
 
 .button {
@@ -105,27 +171,23 @@ export default {
   cursor: pointer;
   transition: transform 0.4s ease, box-shadow 0.4s ease;
   backdrop-filter: blur(4px);
-  background-size: 200% 200%;
-  position: relative;
 }
 
 .button:hover {
   transform: translateY(-5px);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
-  background-position: right center;
 }
 
-.start-quiz-button {
+.sign-in-button {
   background: linear-gradient(135deg, #6a11cb, #2575fc);
 }
 
-.start-simulation-button {
+.register-button {
   background: linear-gradient(135deg, #ff6a00, #ee0979);
 }
 
-/* Footer */
 .footer {
-  background: rgba(40, 53, 147, 0.8); /* Transparent footer with glassmorphism */
+  background: rgba(40, 53, 147, 0.8);
   padding: 10px;
   text-align: center;
   backdrop-filter: blur(5px);
@@ -137,38 +199,55 @@ export default {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Floating Elements (for decoration) */
-.home-screen::before,
-.home-screen::after {
-  content: '';
-  position: absolute;
-  background: rgba(255, 255, 255, 0.1);
-  filter: blur(60px);
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  animation: float 10s ease-in-out infinite;
+.auth-form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
 }
 
-.home-screen::before {
-  top: -100px;
-  left: -100px;
+.auth-form h2 {
+  margin-bottom: 20px;
+  color: #333;
 }
 
-.home-screen::after {
-  bottom: -100px;
-  right: -100px;
+.form-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
-@keyframes float {
-  0% {
-    transform: translateY(0px) translateX(0px);
-  }
-  50% {
-    transform: translateY(-30px) translateX(30px);
-  }
-  100% {
-    transform: translateY(0px) translateX(0px);
-  }
+.form-button {
+  width: 100%;
+  padding: 10px;
+  background: #478ed1;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.form-button:hover {
+  background: #357ac4;
+}
+
+.close-form-button {
+  background: #ff5252;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.close-form-button:hover {
+  background: #ff1744;
 }
 </style>
