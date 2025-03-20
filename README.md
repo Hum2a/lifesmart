@@ -34,7 +34,11 @@ npm install
 
 3. Set up Firebase
    - Create a Firebase project at [firebase.google.com](https://firebase.google.com)
-   - Add your Firebase configuration in `src/firebase/initFirebase.js`
+   - Copy `.env.example` to `.env` and update with your Firebase configuration:
+     ```bash
+     cp .env.example .env
+     ```
+   - Open `.env` and add your Firebase credentials
 
 4. Run the development server
 ```bash
